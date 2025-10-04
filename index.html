@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Wattrix – EV Charge Planner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0b0f1a" />
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#0f1629; --card:#121a2c; --muted:#9aa3b2; --text:#e5e7eb;
+    --brand1:#6d5ef7; --brand2:#38bdf8;
+    --ok:#38bdf8; --warn:#f59e0b; --danger:#ef4444;
+    --radius:16px; --shadow:0 12px 30px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+  header{padding:28px 20px 18px;text-align:center}
+  .logo-wrap{display:flex;justify-content:center;align-items:center;gap:12px}
+  .logo-icon{width:48px;height:48px}
+  .logo-text{font-size:38px;font-weight:700;background:linear-gradient(90deg,var(--brand1),var(--brand2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  header .sub{margin:8px 0 2px;color:var(--muted)}
+  header .tag{margin:2px 0 0;color:#cfd7ea;font-weight:600;letter-spacing:.2px}
+  .container{max-width:1200px;margin:0 auto;padding:0 20px 28px}
+  .grid{display:grid;gap:18px}
+  @media(min-width:1000px){.grid{grid-template-columns:1.1fr 1fr}}
+  .card{background:var(--card);border:1px solid #1c2540;border-radius:20px;box-shadow:var(--shadow)}
+  .card h2{margin:0;padding:14px 16px 0;font-size:18px}
+  .card .content{padding:16px 16px 18px}
+  /* --- Form layout --- */
+  .form-grid{display:grid;gap:14px}
+  @media(min-width:900px){.form-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:899px) and (min-width:600px){.form-grid{grid-template-columns:repeat(2,1fr)}}
+  .field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+  .pair{display:grid;grid-template-columns:1fr 108px;gap:10px} /* input + select pairs */
+  .pair.tight{grid-template-columns:1fr 96px}
+  input,select{
+    width:100%;height:44px;padding:10px 12px;border-radius:12px;
+    border:1px solid #24304f;background:#0f1629;color:var(--text);outline:none
+  }
+  input:focus,select:focus{border-color:var(--brand1);box-shadow:0 0 0 3px rgba(109,94,247,.12)}
+  /* number spinners off */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .chip{
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #2a3660;
+    background:#0f1629;
+    cursor:pointer;
+    font-size:12px;
+    color:#fff;
+  }
+  .btnbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid #2a3660;background:#151d31;color:var(--text);cursor:pointer}
+  .btn:hover{border-color:var(--brand1)}
+  .errors{display:none;margin-top:10px;background:#2a1420;border:1px solid #5c2234;color:#ffd7de;padding:10px;border-radius:12px}
+  /* --- Results --- */
+  .kpis{display:grid;gap:12px}
+  @media(min-width:640px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  .kpi{background:#121a2c;border:1px solid #1f2946;border-radius:14px;padding:16px}
+  .kpi .label{font-size:12px;color:var(--muted)}
+  .kpi .value{font-size:22px;margin-top:6px}
+  .value.ok{color:var(--ok)} .value.warn{color:var(--warn)} .value.danger{color:var(--danger)}
+  .divider{height:1px;background:#1d2745;margin:16px 0}
+  details{border:1px solid #1c2540;border-radius:14px;background:#10182c;overflow:hidden}
+  summary{padding:12px 14px;cursor:pointer;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  details .section{padding:12px 14px 16px}
+  canvas{width:100%;height:180px;background:#0f1629;border-radius:12px;border:1px solid #24304f}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-wrap">
+    <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-label="Wattrix icon">
+      <defs>
+        <linearGradient id="gradBolt" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6d5ef7"/><stop offset="100%" stop-color="#38bdf8"/>
+        </linearGradient>
+      </defs>
+      <polygon points="24,4 44,28 32,28 48,60 20,32 34,32" fill="url(#gradBolt)"/>
+    </svg>
+    <div class="logo-text">WATTRIX</div>
+  </div>
+  <p class="sub">Plan your EV charging - energy, time, and cost made simple.</p>
+  <p class="tag">The EV charging matrix.</p>
+</header>
+
+<div class="container grid">
+  <!-- Inputs -->
+  <section class="card" aria-labelledby="inputs-title">
+    <h2 id="inputs-title">Inputs</h2>
+    <div class="content">
+      <div class="form-grid">
+        <div class="field">
+          <label>Usable battery capacity (kWh)</label>
+          <input id="usableKWh" type="number" min="1" step="0.1" placeholder="e.g. 75">
+        </div>
+
+        <div class="field">
+          <label>Average efficiency</label>
+          <div class="pair">
+            <input id="whPerKm" type="text" inputmode="decimal" placeholder="e.g. 170">
+            <select id="unitDist">
+              <option value="km">Wh/km</option>
+              <option value="mi">Wh/mi</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Charger power (kW)</label>
+          <input id="chargerPower" type="text" inputmode="decimal" placeholder="e.g. 11" value="11">
+        </div>
+
+        <div class="field">
+          <label>Electricity price</label>
+          <div class="pair tight">
+            <input id="pricePerKWh" type="text" inputmode="decimal" placeholder="e.g. 0.20" value="0.20">
+            <select id="currency"><option>€</option><option>$</option><option>£</option></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Trip distance</label>
+          <div class="pair">
+            <input id="tripKm" type="text" inputmode="decimal" placeholder="e.g. 150">
+            <select id="distUnit"><option value="km">km</option><option value="mi">mi</option></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Safety buffer (%)</label>
+          <input id="bufferPct" type="text" inputmode="decimal" placeholder="0" value="0">
+          <div class="chips">
+            <button type="button" class="chip" data-buf="5">+5%</button>
+            <button type="button" class="chip" data-buf="10">+10%</button>
+            <button type="button" class="chip" data-buf="15">+15%</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Current charge (%)</label>
+          <input id="socFrom" type="text" inputmode="decimal" placeholder="e.g. 20" value="20">
+        </div>
+
+        <div class="field">
+          <label>Target charge (%)</label>
+          <input id="socTo" type="text" inputmode="decimal" placeholder="e.g. 80" value="80">
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button id="copyBtn" class="btn">Copy results</button>
+        <button id="printBtn" class="btn">Print</button>
+        <div style="flex:1"></div>
+        <button id="resetBtn" class="btn">Reset</button>
+      </div>
+
+      <div id="errorBox" class="errors" role="alert" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="card" aria-labelledby="results-title">
+    <h2 id="results-title">Results</h2>
+    <div class="content">
+      <div class="kpis" aria-live="polite">
+        <div class="kpi"><div class="label">Energy</div><div class="value ok" id="kpiEnergy">0.0 kWh</div></div>
+        <div class="kpi"><div class="label">Time</div><div class="value" id="kpiTime">0h 00m</div></div>
+        <div class="kpi"><div class="label">Cost</div><div class="value warn" id="kpiCost">€0.00</div></div>
+      </div>
+      <div class="divider"></div>
+      <details open>
+        <summary>Breakdown</summary>
+        <div class="section">
+          <ul id="breakdown" style="margin:8px 0 0 20px"></ul>
+        </div>
+      </details>
+      <details>
+        <summary>SOC chart</summary>
+        <div class="section">
+          <canvas id="socCanvas" width="800" height="180"></canvas>
+        </div>
+      </details>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (n, a, b) => Math.min(Math.max(n, a), b);
+
+// Accept both comma and dot decimals
+function num(v, def=0){
+  if (v == null) return def;
+  const n = parseFloat(String(v).replace(/\s+/g,'').replace(',', '.'));
+  return isFinite(n) ? n : def;
+}
+const fmt = (n, d=1) => isFinite(n) ? Number(n).toFixed(d) : '–';
+
+function recompute(){
+  // Read values (comma/dot safe)
+  const cap = num($('usableKWh').value);
+  const effInput = num($('whPerKm').value);
+  const effUnit = $('unitDist').value;     // Wh/km or Wh/mi
+  const effWhPerKm = effUnit === 'mi' ? (effInput / 1.60934) : effInput;
+
+  const pwr = num($('chargerPower').value);
+  const price = num($('pricePerKWh').value);
+  const currency = $('currency').value;
+
+  const tripVal = num($('tripKm').value);
+  const distUnit = $('distUnit').value;
+  const distanceKm = distUnit === 'mi' ? (tripVal * 1.60934) : tripVal;
+
+  const buf = clamp(num($('bufferPct').value), 0, 50) / 100;
+  const from = clamp(num($('socFrom').value), 0, 100);
+  const to = clamp(num($('socTo').value), 0, 100);
+
+  // Validation
+  const errs = [];
+  if (cap <= 0) errs.push("Usable battery capacity must be greater than 0.");
+  if (effWhPerKm <= 0) errs.push("Average efficiency must be greater than 0.");
+  if (pwr <= 0) errs.push("Charger power should be greater than 0.");
+  if (to <= from) errs.push("Target % must be greater than current %.");
+  const errorBox = $('errorBox');
+  if (errs.length){ errorBox.style.display='block'; errorBox.innerHTML = errs.join('<br>'); }
+  else { errorBox.style.display='none'; errorBox.innerHTML=''; }
+
+  // Compute
+  const hasTrip = distanceKm > 0 && effWhPerKm > 0;
+  const hasSOC  = to > from && cap > 0;
+
+  const tripKWh = hasTrip ? (distanceKm * effWhPerKm / 1000) * (1 + buf) : 0;
+  const socKWh  = hasSOC  ? (cap * (to - from) / 100) : 0;
+
+  const energyKWh = (hasTrip && hasSOC) ? Math.max(tripKWh, socKWh) : (hasTrip ? tripKWh : socKWh);
+  const timeH = pwr > 0 ? (energyKWh / pwr) : 0;
+  const mins = Math.round(timeH * 60);
+  const hrs = Math.floor(mins / 60), mm = mins % 60;
+  const cost = energyKWh * price;
+
+  // KPIs
+  $('kpiEnergy').textContent = `${fmt(energyKWh)} kWh`;
+  $('kpiTime').textContent   = `${hrs}h ${String(mm).padStart(2,'0')}m`;
+  $('kpiCost').textContent   = `${currency}${fmt(cost,2)}`;
+
+  // Breakdown
+  const lines = [];
+  if (hasTrip) lines.push(`Trip energy ≈ ${fmt(tripKWh)} kWh`);
+  if (hasSOC)  lines.push(`SOC window ≈ ${fmt(socKWh)} kWh`);
+  lines.push(`Charging ≈ ${fmt(energyKWh)} kWh, time ≈ ${hrs}h ${mm}m, cost ≈ ${currency}${fmt(cost,2)}`);
+  $('breakdown').innerHTML = lines.map(x=>`<li>${x}</li>`).join('');
+}
+
+function bind(){
+  // Inputs
+  document.querySelectorAll('input, select').forEach(el=>{
+    el.addEventListener('input', recompute);
+    el.addEventListener('change', recompute);
+  });
+  // Chips
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', ()=>{ $('bufferPct').value = c.dataset.buf; recompute(); });
+  });
+  // Actions
+  $('copyBtn').onclick = ()=> navigator.clipboard.writeText($('breakdown').innerText||'');
+  $('printBtn').onclick = ()=> window.print();
+  $('resetBtn').onclick = ()=>{
+    document.querySelectorAll('input[type="text"],input[type="number"]').forEach(i=> i.value='');
+    $('chargerPower').value='11'; $('pricePerKWh').value='0.20';
+    $('socFrom').value='20'; $('socTo').value='80'; $('bufferPct').value='0';
+    $('unitDist').value='km'; $('distUnit').value='km'; $('currency').value='€';
+    recompute();
+  };
+}
+
+bind();
+recompute();
+</script>
+<footer style="text-align:center;color:#9aa3b2;font-size:13px;padding:18px 0 8px;">
+  &copy; 2024 <a href="https://fhatal.com" style="color:#38bdf8;text-decoration:none;">Fhatal.com</a>
+</footer>
+</body>
+</html>
