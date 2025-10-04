@@ -1,4 +1,4 @@
-# Wattrix — EV Charge Planner
+# Wattrix - EV Charge Planner
 
 *The EV charging matrix.*
 
