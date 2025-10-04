@@ -1,86 +1,52 @@
-Wattrix — EV Charge Planner
+# Wattrix — EV Charge Planner
 
-The EV charging matrix.
+*The EV charging matrix.*
 
-Wattrix is a single-file web app that estimates energy to charge (kWh), session time, and cost for any EV. It works from a few simple inputs (battery size, efficiency, charger power, price) and supports both km/mi and comma/dot decimals.
+Wattrix is a single-file web app that estimates **energy to charge (kWh)**, **session time**, and **cost** for any EV. It works from a few simple inputs (battery size, efficiency, charger power, price) and supports both **km/mi** and **comma/dot** decimals.
 
-No backend. No build step. Just open index.html.
+**No backend. No build step. Just open `index.html`.**
 
-Features
+---
 
-Instant estimates: energy (kWh), time (h:mm), and cost.
+## Features
 
-Unit-aware: Wh/km or Wh/mi, km or mi; automatic conversion.
+* **Instant estimates:** energy (kWh), time (h:mm), and cost
+* **Unit-aware:** Wh/km or Wh/mi, km or mi; automatic conversion
+* **Decimal-friendly:** accepts `0.20` and `0,20`
+* **Safety buffer:** quick chips (+5%, +10%, +15%)
+* **Clean UI:** responsive grid, accessible labels, consistent field sizing
+* **Branding:** inline SVG logo + gradient wordmark (no image assets)
+* **Zero dependencies:** pure HTML/CSS/JS
 
-Decimal-friendly: accepts 0.20 and 0,20.
+> Current build intentionally keeps things simple. There’s no account, storage, taper modeling, or fee engine (see roadmap in issues).
 
-Safety buffer: quick chips (+5%, +10%, +15%).
+---
 
-Clean UI: responsive grid, accessible labels, consistent field sizing.
+## How it works
 
-Branding: inline SVG logo + gradient wordmark (no image assets).
+Wattrix computes two energies and charges the **greater** of the two.
 
-Zero dependencies: pure HTML/CSS/JS.
+**Trip energy**
+$$
+\text{trip_kWh}=\frac{\text{distance_km}\times \text{eff_WhPerKm}}{1000}\times (1+\text{buffer})
+$$
 
-Current build intentionally keeps things simple. There’s no account, storage, taper modeling, or fee engine (see Roadmap).
+**SOC window energy**
+$$
+\text{soc_kWh}=\text{usable_kWh}\times \frac{\text{target}%-\text{current}%}{100}
+$$
 
-How it works
+**Then:**
 
-Wattrix computes two energies and charges the greater of the two:
+* **Energy to add** = `max(trip_kWh, soc_kWh)`
+* **Time** = `energy / chargerPower (kW)`
+* **Cost** = `energy * pricePerKWh`
 
-Trip energy
+**Conversions**
 
-trip_kWh
-=
-distance_km
-×
-eff_WhPerKm
-1000
-×
-(
-1
-+
-buffer
-)
-trip_kWh=
-1000
-distance_km×eff_WhPerKm
-	​
+* If **Wh/mi** is chosen: `eff_WhPerKm = eff_WhPerMi / 1.60934`
+* If **mi** distance is chosen: `distance_km = distance_mi * 1.60934`
 
-×(1+buffer)
+**Validation**
 
-SOC window energy
-
-soc_kWh
-=
-usable_kWh
-×
-(
-target%
-−
-current%
-)
-100
-soc_kWh=usable_kWh×
-100
-(target%−current%)
-	​
-
-
-Then:
-
-Energy to add = max(trip_kWh, soc_kWh)
-
-Time = energy / chargerPower (kW)
-
-Cost = energy * pricePerKWh
-
-Conversions:
-
-If Wh/mi is chosen: eff_WhPerKm = eff_WhPerMi / 1.60934
-
-If mi distance is chosen: distance_km = distance_mi * 1.60934
-
-Validation:
-
-Battery > 0, Efficiency > 0, Power > 0, Target% > Current%
+* `battery > 0`, `efficiency > 0`, `power > 0`, `target% > current%`
