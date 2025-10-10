@@ -183,6 +183,11 @@
           <label>Target charge (%)</label>
           <input id="socTo" type="text" inputmode="decimal" placeholder="e.g. 80" value="80">
         </div>
+
+        <div class="field">
+          <label>Planned charging time before trip (hours)</label>
+          <input id="plannedChargeHours" type="text" inputmode="decimal" placeholder="e.g. 3">
+        </div>
       </div>
 
       <div class="btnbar">
@@ -253,40 +258,106 @@ function recompute(){
   const from = clamp(num($('socFrom').value), 0, 100);
   const to = clamp(num($('socTo').value), 0, 100);
 
+  const plannedChargeHours = num($('plannedChargeHours').value);
+
   // Validation
   const errs = [];
   if (cap <= 0) errs.push("Usable battery capacity must be greater than 0.");
   if (effWhPerKm <= 0) errs.push("Average efficiency must be greater than 0.");
   if (pwr <= 0) errs.push("Charger power should be greater than 0.");
-  if (to <= from) errs.push("Target % must be greater than current %.");
+  if (distanceKm <= 0) errs.push("Trip distance must be greater than 0.");
+  if (from < 0 || from > 100) errs.push("Current charge % must be between 0 and 100.");
+  // No need to check to > from for this scenario
   const errorBox = $('errorBox');
   if (errs.length){ errorBox.style.display='block'; errorBox.innerHTML = errs.join('<br>'); }
   else { errorBox.style.display='none'; errorBox.innerHTML=''; }
 
-  // Compute
-  const hasTrip = distanceKm > 0 && effWhPerKm > 0;
-  const hasSOC  = to > from && cap > 0;
+  // --- Calculations ---
+  // 1. Energy needed for trip (with buffer)
+  const tripKWh = (distanceKm * effWhPerKm / 1000) * (1 + buf);
 
-  const tripKWh = hasTrip ? (distanceKm * effWhPerKm / 1000) * (1 + buf) : 0;
-  const socKWh  = hasSOC  ? (cap * (to - from) / 100) : 0;
+  // 2. Energy available at current SOC
+  const availableKWh = cap * from / 100;
 
-  const energyKWh = (hasTrip && hasSOC) ? Math.max(tripKWh, socKWh) : (hasTrip ? tripKWh : socKWh);
-  const timeH = pwr > 0 ? (energyKWh / pwr) : 0;
-  const mins = Math.round(timeH * 60);
-  const hrs = Math.floor(mins / 60), mm = mins % 60;
-  const cost = energyKWh * price;
+  // 3. Energy shortfall (how much needs to be charged)
+  const neededKWh = Math.max(tripKWh - availableKWh, 0);
+
+  // 4. Time needed to charge enough for trip
+  const neededChargeHours = pwr > 0 ? neededKWh / pwr : 0;
+
+  // 5. If user enters planned charging time, how much energy will be added
+  const plannedAddedKWh = plannedChargeHours > 0 ? plannedChargeHours * pwr : 0;
+  const afterChargeKWh = availableKWh + plannedAddedKWh;
+  const afterChargeSOC = cap > 0 ? Math.min(afterChargeKWh / cap * 100, 100) : 0;
+
+  // 6. After driving, how much battery left at destination
+  const destKWh = afterChargeKWh - tripKWh;
+  const destSOC = cap > 0 ? Math.max(destKWh / cap * 100, 0) : 0;
+
+  // 7. Cost for needed energy
+  const neededCost = neededKWh * price;
+  const plannedCost = plannedAddedKWh * price;
 
   // KPIs
-  $('kpiEnergy').textContent = `${fmt(energyKWh)} kWh`;
-  $('kpiTime').textContent   = `${hrs}h ${String(mm).padStart(2,'0')}m`;
-  $('kpiCost').textContent   = `${currency}${fmt(cost,2)}`;
+  $('kpiEnergy').textContent = `${fmt(neededKWh)} kWh`;
+  $('kpiTime').textContent   = `${fmt(neededChargeHours,2)} h`;
+  $('kpiCost').textContent   = `${currency}${fmt(neededCost,2)}`;
 
-  // Breakdown
+  // --- Improved Breakdown ---
   const lines = [];
-  if (hasTrip) lines.push(`Trip energy ≈ ${fmt(tripKWh)} kWh`);
-  if (hasSOC)  lines.push(`SOC window ≈ ${fmt(socKWh)} kWh`);
-  lines.push(`Charging ≈ ${fmt(energyKWh)} kWh, time ≈ ${hrs}h ${mm}m, cost ≈ ${currency}${fmt(cost,2)}`);
-  $('breakdown').innerHTML = lines.map(x=>`<li>${x}</li>`).join('');
+  lines.push(`<strong>Trip:</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Distance: <b>${fmt(distanceKm)} km</b></li>`);
+  lines.push(`<li>Energy needed (with buffer): <b>${fmt(tripKWh)} kWh</b></li>`);
+  lines.push(`</ul>`);
+
+  lines.push(`<strong>Battery before charging:</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Available: <b>${fmt(availableKWh)} kWh</b> (<b>${fmt(from)}%</b>)</li>`);
+  lines.push(`</ul>`);
+
+  lines.push(`<strong>Charging required:</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Energy shortfall: <b>${fmt(neededKWh)} kWh</b></li>`);
+  lines.push(`<li>Required charging time: <b>${fmt(neededChargeHours,2)} h</b> at <b>${fmt(pwr)} kW</b></li>`);
+  lines.push(`<li>Cost for required energy: <b>${currency}${fmt(neededCost,2)}</b></li>`);
+  lines.push(`</ul>`);
+
+  // Suggestion for minimum charging time
+  if (neededKWh > 0) {
+    lines.push(`<span style="color:#38bdf8"><b>Suggestion:</b> You need to charge for at least <b>${fmt(neededChargeHours,2)} hour(s)</b> before the trip to reach your destination.</span>`);
+  } else {
+    lines.push(`<span style="color:#38bdf8"><b>Suggestion:</b> You have enough charge to reach your destination.</span>`);
+  }
+
+  if (plannedChargeHours > 0) {
+    lines.push(`<strong><br>Planned charging:</strong>`);
+    lines.push(`<ul style="margin-top:2px">`);
+    lines.push(`<li>Energy added: <b>${fmt(plannedAddedKWh)} kWh</b> in <b>${fmt(plannedChargeHours,2)} h</b></li>`);
+    lines.push(`<li>Battery after charging: <b>${fmt(afterChargeKWh)} kWh</b> (<b>${fmt(afterChargeSOC)}%</b>)</li>`);
+    if (destKWh < 0) {
+      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip with planned charge! You need to charge more on the road.</span></li>`);
+    } else {
+      lines.push(`<li>Battery at destination: <b>${fmt(destKWh)} kWh</b> (<b>${fmt(destSOC)}%</b>)</li>`);
+    }
+    lines.push(`<li>Cost for planned charge: <b>${currency}${fmt(plannedCost,2)}</b></li>`);
+    lines.push(`</ul>`);
+  } else {
+    const destKWhNoCharge = availableKWh - tripKWh;
+    const destSOCNoCharge = cap > 0 ? Math.max(destKWhNoCharge / cap * 100, 0) : 0;
+    lines.push(`<strong><br>After trip (if no charging):</strong>`);
+    lines.push(`<ul style="margin-top:2px">`);
+    if (destKWhNoCharge < 0) {
+      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip! You need to charge more on the road.</span></li>`);
+    } else {
+      lines.push(`<li>Battery at destination: <b>${fmt(destKWhNoCharge)} kWh</b> (<b>${fmt(destSOCNoCharge)}%</b>)</li>`);
+    }
+    lines.push(`</ul>`);
+  }
+
+  $('breakdown').innerHTML = lines.join('');
 }
 
 function bind(){
