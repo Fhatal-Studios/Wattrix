@@ -232,6 +232,34 @@
 const $ = id => document.getElementById(id);
 const clamp = (n, a, b) => Math.min(Math.max(n, a), b);
 
+// --- Local Storage helpers ---
+const STORAGE_KEY = 'wattrixInputs';
+function saveInputsToStorage() {
+  const fields = [
+    'usableKWh','whPerKm','unitDist','chargerPower','pricePerKWh','currency',
+    'tripKm','distUnit','bufferPct','socFrom','socTo','plannedChargeHours'
+  ];
+  const data = {};
+  fields.forEach(id => {
+    const el = $(id);
+    if (el) data[id] = el.value;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function loadInputsFromStorage() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data) return;
+    Object.entries(data).forEach(([id, val]) => {
+      const el = $(id);
+      if (el) el.value = val;
+    });
+  } catch {}
+}
+function clearInputsStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 // Accept both comma and dot decimals
 function num(v, def=0){
   if (v == null) return def;
@@ -376,12 +404,22 @@ function recompute(){
 function bind(){
   // Inputs
   document.querySelectorAll('input, select').forEach(el=>{
-    el.addEventListener('input', recompute);
-    el.addEventListener('change', recompute);
+    el.addEventListener('input', ()=>{
+      recompute();
+      saveInputsToStorage();
+    });
+    el.addEventListener('change', ()=>{
+      recompute();
+      saveInputsToStorage();
+    });
   });
   // Chips
   document.querySelectorAll('.chip').forEach(c=>{
-    c.addEventListener('click', ()=>{ $('bufferPct').value = c.dataset.buf; recompute(); });
+    c.addEventListener('click', ()=>{
+      $('bufferPct').value = c.dataset.buf;
+      recompute();
+      saveInputsToStorage();
+    });
   });
   // Actions
   $('copyBtn').onclick = ()=> navigator.clipboard.writeText($('breakdown').innerText||'');
@@ -391,12 +429,14 @@ function bind(){
     $('chargerPower').value='11'; $('pricePerKWh').value='0.20';
     $('socFrom').value='20'; $('socTo').value='80'; $('bufferPct').value='0';
     $('unitDist').value='km'; $('distUnit').value='km'; $('currency').value='€';
+    clearInputsStorage();
     recompute();
   };
 }
 
 // Loading animation logic
 window.addEventListener('DOMContentLoaded', ()=>{
+  loadInputsFromStorage();
   setTimeout(()=>{
     const overlay = $('loadingOverlay');
     overlay.classList.add('hide');
