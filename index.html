@@ -382,6 +382,7 @@ const i18n = {
       cost: "Tarvittavan energian kustannus",
       suggestionNeed: "Vinkki: Sinun täytyy ladata vähintään",
       suggestionEnough: "Vinkki: Akussa riittävästi energiaa.",
+      suggestionSuffix: "ennen matkaa.",
       planned: "Suunniteltu lataus:",
       energyAdded: "Lisätty energia",
       afterCharge: "Akun tila latauksen jälkeen",
@@ -434,6 +435,7 @@ const i18n = {
       cost: "Cost for required energy",
       suggestionNeed: "Suggestion: You need to charge for at least",
       suggestionEnough: "Suggestion: You have enough charge to reach your destination.",
+      suggestionSuffix: "before your trip.",
       planned: "Planned charging:",
       energyAdded: "Energy added",
       afterCharge: "Battery after charging",
@@ -581,7 +583,9 @@ function recompute(){
 
   // 5. If user enters planned charging time, how much energy will be added
   const plannedAddedKWh = plannedChargeHours > 0 ? plannedChargeHours * pwr : 0;
-  const afterChargeKWh = availableKWh + plannedAddedKWh;
+  // Clamp afterChargeKWh to not exceed battery capacity
+  const unclampedAfterChargeKWh = availableKWh + plannedAddedKWh;
+  const afterChargeKWh = Math.min(unclampedAfterChargeKWh, cap);
   const afterChargeSOC = cap > 0 ? Math.min(afterChargeKWh / cap * 100, 100) : 0;
 
   // 6. After driving, how much battery left at destination
@@ -590,11 +594,16 @@ function recompute(){
 
   // 7. Cost for needed energy
   const neededCost = neededKWh * price;
-  const plannedCost = plannedAddedKWh * price;
+  // Clamp plannedAddedKWh to not exceed what can actually be added to reach 100%
+  const maxAddableKWh = Math.max(cap - availableKWh, 0);
+  const plannedCost = Math.min(plannedAddedKWh, maxAddableKWh) * price;
 
   // KPIs
   $('kpiEnergy').textContent = `${fmt(neededKWh)} kWh`;
-  $('kpiTime').textContent   = `${fmt(neededChargeHours,2)} h`;
+  // Format KPI time as Xh YYm
+  const kpiH = Math.floor(neededChargeHours);
+  const kpiM = Math.round((neededChargeHours - kpiH) * 60);
+  $('kpiTime').textContent = `${kpiH}h ${kpiM.toString().padStart(2,'0')}m`;
   $('kpiCost').textContent   = `${currency}${fmt(neededCost,2)}`;
 
   // --- Breakdown (language aware) ---
@@ -614,13 +623,20 @@ function recompute(){
   lines.push(`<strong>${t.charging}</strong>`);
   lines.push(`<ul style="margin-top:2px">`);
   lines.push(`<li>${t.shortfall}: <b>${fmt(neededKWh)} kWh</b></li>`);
-  lines.push(`<li>${t.requiredTime}: <b>${fmt(neededChargeHours,2)} h</b> @ <b>${fmt(pwr)} kW</b></li>`);
+  // Format required charging time as Xh YYm
+  {
+    const h = Math.floor(neededChargeHours);
+    const m = Math.round((neededChargeHours - h) * 60);
+    lines.push(`<li>${t.requiredTime}: <b>${h}h ${m.toString().padStart(2,'0')}m</b> @ <b>${fmt(pwr)} kW</b></li>`);
+  }
   lines.push(`<li>${t.cost}: <b>${currency}${fmt(neededCost,2)}</b></li>`);
   lines.push(`</ul>`);
 
   // Suggestion for minimum charging time
   if (neededKWh > 0) {
-    lines.push(`<span style="color:#38bdf8"><b>${t.suggestionNeed}</b> <b>${fmt(neededChargeHours,2)} h</b> ennen matkaa.</span>`);
+    const h = Math.floor(neededChargeHours);
+    const m = Math.round((neededChargeHours - h) * 60);
+    lines.push(`<span style="color:#38bdf8"><b>${t.suggestionNeed}</b> <b>${h}h ${m.toString().padStart(2,'0')}m</b> ${t.suggestionSuffix}</span>`);
   } else {
     lines.push(`<span style="color:#38bdf8"><b>${t.suggestionEnough}</b></span>`);
   }
@@ -628,7 +644,12 @@ function recompute(){
   if (plannedChargeHours > 0) {
     lines.push(`<strong><br>${t.planned}</strong>`);
     lines.push(`<ul style="margin-top:2px">`);
-    lines.push(`<li>${t.energyAdded}: <b>${fmt(plannedAddedKWh)} kWh</b> / <b>${fmt(plannedChargeHours,2)} h</b></li>`);
+    // Show the actual energy added (clamped) and time as Xh YYm
+    const actualAddedKWh = afterChargeKWh - availableKWh;
+    const actualAddedHours = pwr > 0 ? actualAddedKWh / pwr : 0;
+    const h = Math.floor(actualAddedHours);
+    const m = Math.round((actualAddedHours - h) * 60);
+    lines.push(`<li>${t.energyAdded}: <b>${fmt(actualAddedKWh)} kWh</b> / <b>${h}h ${m.toString().padStart(2,'0')}m</b></li>`);
     lines.push(`<li>${t.afterCharge}: <b>${fmt(afterChargeKWh)} kWh</b> (<b>${fmt(afterChargeSOC)}%</b>)</li>`);
     if (destKWh < 0) {
       lines.push(`<li><span style="color:#ef4444"><b>${t.atDest}:</b> 0.0 kWh (0%)</span></li>`);
