@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="utf-8" />
 <title>Wattrix – EV Charge Planner</title>
@@ -90,6 +90,85 @@
     0% {transform:rotate(0deg);}
     100% {transform:rotate(360deg);}
   }
+  /* --- Ad banner --- */
+  #adBanner {
+    max-width: 1200px;
+    margin: 0 auto 18px auto;
+    padding: 14px 0;
+    text-align: center;
+    background: #181f33;
+    border: 1px solid #28345a;
+    border-radius: 14px;
+    color: #9aa3b2;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: .1px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  /* --- Language selector --- */
+  .lang-switcher {
+    position: absolute;
+    top: 22px;
+    right: 32px;
+    z-index: 10;
+    font-size: 15px;
+    user-select: none;
+  }
+  @media (max-width: 600px) {
+    .lang-switcher { top: 10px; right: 10px; }
+  }
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #181f33;
+    color: #9aa3b2;
+    border: 1px solid #28345a;
+    border-radius: 10px;
+    padding: 7px 14px 7px 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    outline: none;
+  }
+  .lang-btn:hover, .lang-btn:focus {
+    border-color: var(--brand1);
+    color: #fff;
+  }
+  .lang-btn svg {
+    width: 18px; height: 18px; vertical-align: middle;
+    fill: #38bdf8;
+  }
+  .lang-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    margin-top: 5px;
+    background: #181f33;
+    border: 1px solid #28345a;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    min-width: 120px;
+    z-index: 100;
+  }
+  .lang-switcher.open .lang-dropdown { display: block; }
+  .lang-option {
+    padding: 10px 18px 10px 18px;
+    color: #e5e7eb;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background .13s;
+  }
+  .lang-option.selected, .lang-option:hover {
+    background: #232b45;
+    color: #38bdf8;
+  }
 </style>
 </head>
 <body>
@@ -105,6 +184,21 @@
   </svg>
 </div>
 
+<!-- Ad banner placeholder (replace with your ad provider code as needed) -->
+
+<!-- Language selector (modern floating button) -->
+<div class="lang-switcher" id="langSwitcher">
+  <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+    <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm6.93 7h-3.02A12.1 12.1 0 0013 4.36 6.03 6.03 0 0116.93 9zM10 4.06c.7.9 1.3 2.13 1.67 3.94H8.33C8.7 6.19 9.3 4.96 10 4.06zM4.36 11A10.7 10.7 0 014 10c0-.34.01-.67.04-1h3.02A13.6 13.6 0 007 15.64 6.03 6.03 0 013.07 11zm.57-2A10.7 10.7 0 014 10c0 .34.01.67.04 1h3.02A13.6 13.6 0 007 4.36 6.03 6.03 0 013.07 9zm9.63 2c-.13.93-.33 1.8-.6 2.64-.37 1.08-.84 2.01-1.33 2.7A6.03 6.03 0 0016.93 11h-3.02zm-2.7 4.3c-.37.53-.76.94-1.16 1.24-.4-.3-.79-.71-1.16-1.24-.37-.53-.7-1.17-.96-1.87h4.24c-.26.7-.59 1.34-.96 1.87zM10 15.94c-.7-.9-1.3-2.13-1.67-3.94h3.34c-.37 1.81-.97 3.04-1.67 3.94z"/></svg>
+    <span id="langBtnLabel">Suomi</span>
+    <svg style="width:14px;height:14px;fill:#9aa3b2;" viewBox="0 0 20 20"><path d="M5.5 8l4.5 4.5L14.5 8z"/></svg>
+  </button>
+  <div class="lang-dropdown" id="langDropdown" role="listbox">
+    <button class="lang-option" data-lang="fi" id="langOptFi">Suomi</button>
+    <button class="lang-option" data-lang="en" id="langOptEn">English</button>
+  </div>
+</div>
+
 <header>
   <div class="logo-wrap">
     <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-label="Wattrix icon">
@@ -117,55 +211,50 @@
     </svg>
     <div class="logo-text">WATTRIX</div>
   </div>
-  <p class="sub">Plan your EV charging - energy, time, and cost made simple.</p>
-  <p class="tag">The EV charging matrix.</p>
+  <p class="sub" data-i18n="subtitle">Suunnittele sähköauton lataus – energia, aika ja kustannukset helposti.</p>
+  <p class="tag" data-i18n="tagline">Sähköauton latausmatriisi.</p>
 </header>
 
 <div class="container grid">
   <!-- Inputs -->
   <section class="card" aria-labelledby="inputs-title">
-    <h2 id="inputs-title">Inputs</h2>
+    <h2 id="inputs-title" data-i18n="inputsTitle">Syötteet</h2>
     <div class="content">
       <div class="form-grid">
         <div class="field">
-          <label>Usable battery capacity (kWh)</label>
-          <input id="usableKWh" type="number" min="1" step="0.1" placeholder="e.g. 75">
+          <label data-i18n="usableKWh">Akun käytettävä kapasiteetti (kWh)</label>
+          <input id="usableKWh" type="number" min="1" step="0.1" placeholder="esim. 75">
         </div>
-
         <div class="field">
-          <label>Average efficiency</label>
+          <label data-i18n="avgEff">Keskimääräinen kulutus</label>
           <div class="pair">
-            <input id="whPerKm" type="text" inputmode="decimal" placeholder="e.g. 170">
+            <input id="whPerKm" type="text" inputmode="decimal" placeholder="esim. 170">
             <select id="unitDist">
               <option value="km">Wh/km</option>
               <option value="mi">Wh/mi</option>
             </select>
           </div>
         </div>
-
         <div class="field">
-          <label>Charger power (kW)</label>
-          <input id="chargerPower" type="text" inputmode="decimal" placeholder="e.g. 11" value="11">
+          <label data-i18n="chargerPower">Laturin teho (kW)</label>
+          <input id="chargerPower" type="text" inputmode="decimal" placeholder="esim. 11" value="11">
         </div>
-
         <div class="field">
-          <label>Electricity price</label>
+          <label data-i18n="pricePerKWh">Sähkön hinta</label>
           <div class="pair tight">
-            <input id="pricePerKWh" type="text" inputmode="decimal" placeholder="e.g. 0.20" value="0.20">
+            <input id="pricePerKWh" type="text" inputmode="decimal" placeholder="esim. 0.20" value="0.20">
             <select id="currency"><option>€</option><option>$</option><option>£</option></select>
           </div>
         </div>
-
         <div class="field">
-          <label>Trip distance</label>
+          <label data-i18n="tripDist">Matkan pituus</label>
           <div class="pair">
-            <input id="tripKm" type="text" inputmode="decimal" placeholder="e.g. 150">
+            <input id="tripKm" type="text" inputmode="decimal" placeholder="esim. 150">
             <select id="distUnit"><option value="km">km</option><option value="mi">mi</option></select>
           </div>
         </div>
-
         <div class="field">
-          <label>Safety buffer (%)</label>
+          <label data-i18n="bufferPct">Turvamarginaali (%)</label>
           <input id="bufferPct" type="text" inputmode="decimal" placeholder="0" value="0">
           <div class="chips">
             <button type="button" class="chip" data-buf="5">+5%</button>
@@ -173,29 +262,26 @@
             <button type="button" class="chip" data-buf="15">+15%</button>
           </div>
         </div>
-
         <div class="field">
-          <label>Current charge (%)</label>
-          <input id="socFrom" type="text" inputmode="decimal" placeholder="e.g. 20" value="20">
+          <label data-i18n="socFrom">Nykyinen lataustaso (%)</label>
+          <input id="socFrom" type="text" inputmode="decimal" placeholder="esim. 20" value="20">
         </div>
-
         <div class="field">
-          <label>Target charge (%)</label>
-          <input id="socTo" type="text" inputmode="decimal" placeholder="e.g. 80" value="80">
+          <label data-i18n="socTo">Tavoite lataustaso (%)</label>
+          <input id="socTo" type="text" inputmode="decimal" placeholder="esim. 80" value="80">
         </div>
-
         <div class="field">
-          <label>Planned charging time before trip (hours)</label>
-          <input id="plannedChargeHours" type="text" inputmode="decimal" placeholder="e.g. 3">
+          <label data-i18n="plannedChargeHours">Suunniteltu latausaika ennen matkaa (h)</label>
+          <input id="plannedChargeHours" type="text" inputmode="decimal" placeholder="esim. 3">
           <div id="chargeTimeHint" style="color:var(--muted);font-size:12px;margin-top:4px"></div>
         </div>
       </div>
 
       <div class="btnbar">
-        <button id="copyBtn" class="btn">Copy results</button>
-        <button id="printBtn" class="btn">Print</button>
+        <button id="copyBtn" class="btn" data-i18n="copyBtn">Kopioi tulokset</button>
+        <button id="printBtn" class="btn" data-i18n="printBtn">Tulosta</button>
         <div style="flex:1"></div>
-        <button id="resetBtn" class="btn">Reset</button>
+        <button id="resetBtn" class="btn" data-i18n="resetBtn">Tyhjennä</button>
       </div>
 
       <div id="errorBox" class="errors" role="alert" aria-live="polite"></div>
@@ -204,24 +290,18 @@
 
   <!-- Results -->
   <section class="card" aria-labelledby="results-title">
-    <h2 id="results-title">Results</h2>
+    <h2 id="results-title" data-i18n="resultsTitle">Tulokset</h2>
     <div class="content">
       <div class="kpis" aria-live="polite">
-        <div class="kpi"><div class="label">Energy</div><div class="value ok" id="kpiEnergy">0.0 kWh</div></div>
-        <div class="kpi"><div class="label">Time</div><div class="value" id="kpiTime">0h 00m</div></div>
-        <div class="kpi"><div class="label">Cost</div><div class="value warn" id="kpiCost">€0.00</div></div>
+        <div class="kpi"><div class="label" data-i18n="kpiEnergy">Energia</div><div class="value ok" id="kpiEnergy">0.0 kWh</div></div>
+        <div class="kpi"><div class="label" data-i18n="kpiTime">Aika</div><div class="value" id="kpiTime">0h 00m</div></div>
+        <div class="kpi"><div class="label" data-i18n="kpiCost">Kustannus</div><div class="value warn" id="kpiCost">€0.00</div></div>
       </div>
       <div class="divider"></div>
       <details open>
-        <summary>Breakdown</summary>
+        <summary data-i18n="breakdownTitle">Yksityiskohdat</summary>
         <div class="section">
           <ul id="breakdown" style="margin:8px 0 0 20px"></ul>
-        </div>
-      </details>
-      <details>
-        <summary>SOC chart</summary>
-        <div class="section">
-          <canvas id="socCanvas" width="800" height="180"></canvas>
         </div>
       </details>
     </div>
@@ -260,6 +340,190 @@ function clearInputsStorage() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// --- i18n helpers ---
+const i18n = {
+  fi: {
+    subtitle: "Suunnittele sähköauton lataus – energia, aika ja kustannukset helposti.",
+    tagline: "Sähköauton latausmatriisi.",
+    inputsTitle: "Syötteet",
+    usableKWh: "Akun käytettävä kapasiteetti (kWh)",
+    avgEff: "Keskimääräinen kulutus",
+    chargerPower: "Laturin teho (kW)",
+    pricePerKWh: "Sähkön hinta",
+    tripDist: "Matkan pituus",
+    bufferPct: "Turvamarginaali (%)",
+    socFrom: "Nykyinen lataustaso (%)",
+    socTo: "Tavoite lataustaso (%)",
+    plannedChargeHours: "Suunniteltu latausaika ennen matkaa (h)",
+    copyBtn: "Kopioi tulokset",
+    printBtn: "Tulosta",
+    resetBtn: "Tyhjennä",
+    resultsTitle: "Tulokset",
+    kpiEnergy: "Energia",
+    kpiTime: "Aika",
+    kpiCost: "Kustannus",
+    breakdownTitle: "Yksityiskohdat",
+    errors: {
+      cap: "Akun käytettävä kapasiteetti oltava yli 0.",
+      eff: "Keskimääräinen kulutus oltava yli 0.",
+      pwr: "Laturin teho oltava yli 0.",
+      dist: "Matkan pituus oltava yli 0.",
+      soc: "Nykyinen lataustaso % oltava välillä 0–100."
+    },
+    breakdown: {
+      trip: "Matka:",
+      distance: "Pituus",
+      energyWithBuffer: "Tarvittava energia (sis. marginaali)",
+      beforeCharge: "Akun tila ennen latausta:",
+      available: "Saatavilla",
+      charging: "Lataustarve:",
+      shortfall: "Energiavaje",
+      requiredTime: "Tarvittava latausaika",
+      cost: "Tarvittavan energian kustannus",
+      suggestionNeed: "Vinkki: Sinun täytyy ladata vähintään",
+      suggestionEnough: "Vinkki: Akussa riittävästi energiaa.",
+      planned: "Suunniteltu lataus:",
+      energyAdded: "Lisätty energia",
+      afterCharge: "Akun tila latauksen jälkeen",
+      atDest: "Perillä",
+      warningNotEnough: "Varoitus: Energia ei riitä matkalle! Lataa lisää matkalla.",
+      destBat: "Akun tila perillä",
+      plannedCost: "Latauksen kustannus",
+      afterTrip: "Matkan jälkeen (ilman latausta):",
+      chargeHint: (from, to, h, m, pwr) => `Latausaika ${from}% → ${to}%: <b>${h}h ${m.toString().padStart(2,'0')}m</b> @ ${pwr} kW`,
+      chargeHintInvalid: "Tavoite latausprosentti oltava suurempi kuin nykyinen."
+    }
+  },
+  en: {
+    subtitle: "Plan your EV charging – energy, time, and cost made simple.",
+    tagline: "The EV charging matrix.",
+    inputsTitle: "Inputs",
+    usableKWh: "Usable battery capacity (kWh)",
+    avgEff: "Average efficiency",
+    chargerPower: "Charger power (kW)",
+    pricePerKWh: "Electricity price",
+    tripDist: "Trip distance",
+    bufferPct: "Safety buffer (%)",
+    socFrom: "Current charge (%)",
+    socTo: "Target charge (%)",
+    plannedChargeHours: "Planned charging time before trip (hours)",
+    copyBtn: "Copy results",
+    printBtn: "Print",
+    resetBtn: "Reset",
+    resultsTitle: "Results",
+    kpiEnergy: "Energy",
+    kpiTime: "Time",
+    kpiCost: "Cost",
+    breakdownTitle: "Breakdown",
+    errors: {
+      cap: "Usable battery capacity must be greater than 0.",
+      eff: "Average efficiency must be greater than 0.",
+      pwr: "Charger power should be greater than 0.",
+      dist: "Trip distance must be greater than 0.",
+      soc: "Current charge % must be between 0 and 100."
+    },
+    breakdown: {
+      trip: "Trip:",
+      distance: "Distance",
+      energyWithBuffer: "Energy needed (with buffer)",
+      beforeCharge: "Battery before charging:",
+      available: "Available",
+      charging: "Charging required:",
+      shortfall: "Energy shortfall",
+      requiredTime: "Required charging time",
+      cost: "Cost for required energy",
+      suggestionNeed: "Suggestion: You need to charge for at least",
+      suggestionEnough: "Suggestion: You have enough charge to reach your destination.",
+      planned: "Planned charging:",
+      energyAdded: "Energy added",
+      afterCharge: "Battery after charging",
+      atDest: "At destination",
+      warningNotEnough: "Warning: Not enough energy for trip! You need to charge more on the road.",
+      destBat: "Battery at destination",
+      plannedCost: "Cost for planned charge",
+      afterTrip: "After trip (if no charging):",
+      chargeHint: (from, to, h, m, pwr) => `To charge from ${from}% to ${to}%: <b>${h}h ${m.toString().padStart(2,'0')}m</b> at ${pwr} kW`,
+      chargeHintInvalid: "Target charge must be greater than current charge."
+    }
+  }
+};
+
+let lang = localStorage.getItem('wattrixLang') || 'fi';
+
+function setLang(newLang) {
+  lang = newLang;
+  localStorage.setItem('wattrixLang', lang);
+  // Update all [data-i18n] elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    let val = i18n[lang][key];
+    if (!val && key in i18n[lang].breakdown) val = i18n[lang].breakdown[key];
+    if (val) el.textContent = val;
+  });
+  // Update placeholders
+  $('usableKWh').placeholder = lang === 'fi' ? 'esim. 75' : 'e.g. 75';
+  $('whPerKm').placeholder = lang === 'fi' ? 'esim. 170' : 'e.g. 170';
+  $('chargerPower').placeholder = lang === 'fi' ? 'esim. 11' : 'e.g. 11';
+  $('pricePerKWh').placeholder = lang === 'fi' ? 'esim. 0.20' : 'e.g. 0.20';
+  $('tripKm').placeholder = lang === 'fi' ? 'esim. 150' : 'e.g. 150';
+  $('bufferPct').placeholder = '0';
+  $('socFrom').placeholder = lang === 'fi' ? 'esim. 20' : 'e.g. 20';
+  $('socTo').placeholder = lang === 'fi' ? 'esim. 80' : 'e.g. 80';
+  $('plannedChargeHours').placeholder = lang === 'fi' ? 'esim. 3' : 'e.g. 3';
+  // Update breakdown and error messages
+  recompute();
+}
+
+// Remove this old code, it's not needed anymore and will cause errors:
+// $('langSel').value = lang;
+// $('langSel').addEventListener('change', e => setLang(e.target.value));
+
+// --- Language switcher UI logic ---
+(function(){
+  const switcher = document.getElementById('langSwitcher');
+  const btn = document.getElementById('langBtn');
+  const dropdown = document.getElementById('langDropdown');
+  const label = document.getElementById('langBtnLabel');
+  const optFi = document.getElementById('langOptFi');
+  const optEn = document.getElementById('langOptEn');
+  function updateLangUI() {
+    label.textContent = lang === 'fi' ? 'Suomi' : 'English';
+    optFi.classList.toggle('selected', lang === 'fi');
+    optEn.classList.toggle('selected', lang === 'en');
+    btn.setAttribute('aria-expanded', switcher.classList.contains('open') ? 'true' : 'false');
+  }
+  btn.onclick = (e) => {
+    switcher.classList.toggle('open');
+    updateLangUI();
+    e.stopPropagation();
+  };
+  [optFi, optEn].forEach(opt => {
+    opt.onclick = (e) => {
+      setLang(opt.dataset.lang);
+      switcher.classList.remove('open');
+      updateLangUI();
+      e.stopPropagation();
+    };
+  });
+  // Close dropdown on outside click
+  document.addEventListener('click', () => switcher.classList.remove('open'));
+  // Keyboard accessibility
+  btn.onkeydown = (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      switcher.classList.add('open');
+      updateLangUI();
+      e.preventDefault();
+    }
+  };
+  dropdown.onkeydown = (e) => {
+    if (e.key === 'Escape') {
+      switcher.classList.remove('open');
+      btn.focus();
+    }
+  };
+  updateLangUI();
+})();
+
 // Accept both comma and dot decimals
 function num(v, def=0){
   if (v == null) return def;
@@ -291,11 +555,12 @@ function recompute(){
 
   // Validation
   const errs = [];
-  if (cap <= 0) errs.push("Usable battery capacity must be greater than 0.");
-  if (effWhPerKm <= 0) errs.push("Average efficiency must be greater than 0.");
-  if (pwr <= 0) errs.push("Charger power should be greater than 0.");
-  if (distanceKm <= 0) errs.push("Trip distance must be greater than 0.");
-  if (from < 0 || from > 100) errs.push("Current charge % must be between 0 and 100.");
+  const errTxt = i18n[lang].errors;
+  if (cap <= 0) errs.push(errTxt.cap);
+  if (effWhPerKm <= 0) errs.push(errTxt.eff);
+  if (pwr <= 0) errs.push(errTxt.pwr);
+  if (distanceKm <= 0) errs.push(errTxt.dist);
+  if (from < 0 || from > 100) errs.push(errTxt.soc);
   // No need to check to > from for this scenario
   const errorBox = $('errorBox');
   if (errs.length){ errorBox.style.display='block'; errorBox.innerHTML = errs.join('<br>'); }
@@ -332,60 +597,60 @@ function recompute(){
   $('kpiTime').textContent   = `${fmt(neededChargeHours,2)} h`;
   $('kpiCost').textContent   = `${currency}${fmt(neededCost,2)}`;
 
-  // --- Improved Breakdown ---
+  // --- Breakdown (language aware) ---
+  const t = i18n[lang].breakdown;
   const lines = [];
-  lines.push(`<strong>Trip:</strong>`);
+  lines.push(`<strong>${t.trip}</strong>`);
   lines.push(`<ul style="margin-top:2px">`);
-  lines.push(`<li>Distance: <b>${fmt(distanceKm)} km</b></li>`);
-  lines.push(`<li>Energy needed (with buffer): <b>${fmt(tripKWh)} kWh</b></li>`);
+  lines.push(`<li>${t.distance}: <b>${fmt(distanceKm)} km</b></li>`);
+  lines.push(`<li>${t.energyWithBuffer}: <b>${fmt(tripKWh)} kWh</b></li>`);
   lines.push(`</ul>`);
 
-  lines.push(`<strong>Battery before charging:</strong>`);
+  lines.push(`<strong>${t.beforeCharge}</strong>`);
   lines.push(`<ul style="margin-top:2px">`);
-  lines.push(`<li>Available: <b>${fmt(availableKWh)} kWh</b> (<b>${fmt(from)}%</b>)</li>`);
+  lines.push(`<li>${t.available}: <b>${fmt(availableKWh)} kWh</b> (<b>${fmt(from)}%</b>)</li>`);
   lines.push(`</ul>`);
 
-  lines.push(`<strong>Charging required:</strong>`);
+  lines.push(`<strong>${t.charging}</strong>`);
   lines.push(`<ul style="margin-top:2px">`);
-  lines.push(`<li>Energy shortfall: <b>${fmt(neededKWh)} kWh</b></li>`);
-  lines.push(`<li>Required charging time: <b>${fmt(neededChargeHours,2)} h</b> at <b>${fmt(pwr)} kW</b></li>`);
-  lines.push(`<li>Cost for required energy: <b>${currency}${fmt(neededCost,2)}</b></li>`);
+  lines.push(`<li>${t.shortfall}: <b>${fmt(neededKWh)} kWh</b></li>`);
+  lines.push(`<li>${t.requiredTime}: <b>${fmt(neededChargeHours,2)} h</b> @ <b>${fmt(pwr)} kW</b></li>`);
+  lines.push(`<li>${t.cost}: <b>${currency}${fmt(neededCost,2)}</b></li>`);
   lines.push(`</ul>`);
 
   // Suggestion for minimum charging time
   if (neededKWh > 0) {
-    lines.push(`<span style="color:#38bdf8"><b>Suggestion:</b> You need to charge for at least <b>${fmt(neededChargeHours,2)} hour(s)</b> before the trip to reach your destination.</span>`);
+    lines.push(`<span style="color:#38bdf8"><b>${t.suggestionNeed}</b> <b>${fmt(neededChargeHours,2)} h</b> ennen matkaa.</span>`);
   } else {
-    lines.push(`<span style="color:#38bdf8"><b>Suggestion:</b> You have enough charge to reach your destination.</span>`);
+    lines.push(`<span style="color:#38bdf8"><b>${t.suggestionEnough}</b></span>`);
   }
 
   if (plannedChargeHours > 0) {
-    lines.push(`<strong><br>Planned charging:</strong>`);
+    lines.push(`<strong><br>${t.planned}</strong>`);
     lines.push(`<ul style="margin-top:2px">`);
-    lines.push(`<li>Energy added: <b>${fmt(plannedAddedKWh)} kWh</b> in <b>${fmt(plannedChargeHours,2)} h</b></li>`);
-    lines.push(`<li>Battery after charging: <b>${fmt(afterChargeKWh)} kWh</b> (<b>${fmt(afterChargeSOC)}%</b>)</li>`);
+    lines.push(`<li>${t.energyAdded}: <b>${fmt(plannedAddedKWh)} kWh</b> / <b>${fmt(plannedChargeHours,2)} h</b></li>`);
+    lines.push(`<li>${t.afterCharge}: <b>${fmt(afterChargeKWh)} kWh</b> (<b>${fmt(afterChargeSOC)}%</b>)</li>`);
     if (destKWh < 0) {
-      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
-      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip with planned charge! You need to charge more on the road.</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>${t.atDest}:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>${t.warningNotEnough}</b></span></li>`);
     } else {
-      lines.push(`<li>Battery at destination: <b>${fmt(destKWh)} kWh</b> (<b>${fmt(destSOC)}%</b>)</li>`);
+      lines.push(`<li>${t.destBat}: <b>${fmt(destKWh)} kWh</b> (<b>${fmt(destSOC)}%</b>)</li>`);
     }
-    lines.push(`<li>Cost for planned charge: <b>${currency}${fmt(plannedCost,2)}</b></li>`);
+    lines.push(`<li>${t.plannedCost}: <b>${currency}${fmt(plannedCost,2)}</b></li>`);
     lines.push(`</ul>`);
   } else {
     const destKWhNoCharge = availableKWh - tripKWh;
     const destSOCNoCharge = cap > 0 ? Math.max(destKWhNoCharge / cap * 100, 0) : 0;
-    lines.push(`<strong><br>After trip (if no charging):</strong>`);
+    lines.push(`<strong><br>${t.afterTrip}</strong>`);
     lines.push(`<ul style="margin-top:2px">`);
     if (destKWhNoCharge < 0) {
-      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
-      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip! You need to charge more on the road.</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>${t.atDest}:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>${t.warningNotEnough}</b></span></li>`);
     } else {
-      lines.push(`<li>Battery at destination: <b>${fmt(destKWhNoCharge)} kWh</b> (<b>${fmt(destSOCNoCharge)}%</b>)</li>`);
+      lines.push(`<li>${t.destBat}: <b>${fmt(destKWhNoCharge)} kWh</b> (<b>${fmt(destSOCNoCharge)}%</b>)</li>`);
     }
     lines.push(`</ul>`);
   }
-
   $('breakdown').innerHTML = lines.join('');
   // --- Show time needed to charge from current to target SOC ---
   let hint = '';
@@ -394,9 +659,9 @@ function recompute(){
     const hours = kWhNeeded / pwr;
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
-    hint = `To charge from ${fmt(from,0)}% to ${fmt(to,0)}%: <b>${h}h ${m.toString().padStart(2,'0')}m</b> at ${fmt(pwr)} kW`;
+    hint = t.chargeHint(fmt(from,0), fmt(to,0), h, m, fmt(pwr));
   } else if (to <= from) {
-    hint = `Target charge must be greater than current charge.`;
+    hint = t.chargeHintInvalid;
   }
   $('chargeTimeHint').innerHTML = hint;
 }
@@ -437,6 +702,7 @@ function bind(){
 // Loading animation logic
 window.addEventListener('DOMContentLoaded', ()=>{
   loadInputsFromStorage();
+  setLang(lang);
   setTimeout(()=>{
     const overlay = $('loadingOverlay');
     overlay.classList.add('hide');
