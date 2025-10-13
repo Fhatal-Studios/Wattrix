@@ -1,4 +1,4 @@
-# robots.txt for https://wattrix.com/
+# robots.txt for https://wattrix.app/
 
 User-agent: *
 Allow: /
@@ -7,4 +7,4 @@ Allow: /
 Disallow: /CNAME
 
 # Sitemap location
-Sitemap: https://wattrix.com/sitemap.xml
+Sitemap: https://wattrix.app/sitemap.xml
