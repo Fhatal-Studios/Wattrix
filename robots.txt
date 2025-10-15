@@ -1,0 +1,10 @@
+# robots.txt for https://wattrix.app/
+
+User-agent: *
+Allow: /
+
+# Disallow non-public or irrelevant files
+Disallow: /CNAME
+
+# Sitemap location
+Sitemap: https://wattrix.app/sitemap.xml
