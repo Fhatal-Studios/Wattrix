@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Wattrix • Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#070b14" />
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237559ff'/%3E%3Cstop offset='1' stop-color='%2338fbd0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='24,4 44,28 32,28 48,60 20,32 34,32' fill='url(%23g)'/%3E%3C/svg%3E">
+
+<style>
+/* =========================================================
+   WATTRIX / FIGMA TOKENS — keep IDENTICAL to index.html
+   =======================================================*/
+:root{
+  --bg-0:#070b14; --bg-1:#0b1222; --bg-2:#0f1830; --stroke:#1e2b52;
+  --text:#e8ecf8; --muted:#9ba6bf;
+  --brand-1:#7559ff; --brand-2:#38fbd0; --brand-3:#2dd4ff;
+  --grad-hero: radial-gradient(1200px 700px at 20% -10%, rgba(117,89,255,.22), transparent 60%),
+               radial-gradient(1200px 700px at 80% 10%, rgba(56,251,208,.18), transparent 60%),
+               linear-gradient(180deg, #070b14 0%, #090f1c 60%, #070b14 100%);
+  --grad-card: linear-gradient(180deg, rgba(21,30,58,.55), rgba(13,21,43,.55));
+  --grad-border: conic-gradient(from 180deg at 50% 50%, rgba(117,89,255,.6), rgba(45,212,255,.6), rgba(56,251,208,.6), rgba(117,89,255,.6));
+  --radius-xl:24px; --radius-lg:18px; --radius-md:14px;
+  --shadow-lg:0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+  --shadow-sm:0 8px 24px rgba(0,0,0,.35);
+  --glass:backdrop-filter: blur(16px);
+  --ring-focus:0 0 0 4px rgba(117,89,255,.25);
+  --font-sans:'Space Grotesk', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --s-1:6px; --s-2:10px; --s-3:14px; --s-4:18px; --s-5:22px; --s-6:28px; --s-7:36px; --s-8:48px; --s-9:64px; --s-10:92px;
+}
+
+/* Base & layout */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; color:var(--text); background:var(--bg-0); font:16px/1.6 var(--font-sans)}
+.container{max-width:1200px; margin:0 auto; padding:0 var(--s-4)}
+.section{padding: var(--s-8) 0}
+
+/* Neon grid bg */
+.bg-grid{position:fixed; inset:0; z-index:-1;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size:28px 28px;
+  mask-image: radial-gradient(1000px 600px at 50% 10%, black 50%, transparent 100%);
+}
+
+/* Nav (shared) */
+.nav{position:sticky; top:0; z-index:50; backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgba(7,11,20,.75), rgba(7,11,20,.45));
+  border-bottom:1px solid rgba(45,64,120,.35);
+}
+.nav-inner{max-width:1200px; margin:0 auto; padding: var(--s-2) var(--s-4);
+  display:flex; align-items:center; gap:var(--s-3); justify-content:space-between}
+.brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text)}
+.brand .bolt{width:32px; height:32px}
+.brand .name{font-weight:700; letter-spacing:.2px}
+.nav a{color:var(--text); text-decoration:none; padding:10px 14px; border-radius:10px; border:1px solid transparent}
+.nav a:hover{border-color:#2a3869}
+.nav a.active{background:#0f1830; border:1px solid #2a3869; box-shadow: inset 0 0 0 1px rgba(255,255,255,.02)}
+.btn{appearance:none; border:1px solid #2a3869; color:var(--text); background:#0c1429;
+  padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
+.btn:hover{border-color:#5d79ff}
+.btn.primary{background: linear-gradient(90deg, rgba(117,89,255,.18), rgba(56,251,208,.18));
+  border-image: var(--grad-border) 1; box-shadow: var(--shadow-sm)}
+
+/* Head */
+.header{padding: var(--s-8) 0 var(--s-5); background: var(--grad-hero); position:relative}
+.header h1{margin:0; font-size: clamp(28px, 4.8vw, 42px)}
+.header p{margin-top: var(--s-3); color:var(--muted)}
+
+/* Grid */
+.grid{display:grid; gap:16px}
+@media(min-width:960px){.grid.cols-2{grid-template-columns:1.1fr 1fr}}
+
+/* Cards */
+.card{
+  border-radius: var(--radius-xl);
+  background: var(--grad-card);
+  border:1px solid rgba(42,56,105,.6);
+  box-shadow: var(--shadow-lg);
+  padding:22px;
+}
+
+/* Form */
+.form-grid{display:grid; gap:14px}
+@media(min-width:900px){.form-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:899px) and (min-width:600px){.form-grid{grid-template-columns:repeat(2,1fr)}}
+.field label{display:block; color:var(--muted); font-size:12px; margin-bottom:6px}
+.pair{display:grid; grid-template-columns:1fr 116px; gap:10px}
+.pair.tight{grid-template-columns:1fr 96px}
+
+input,select{
+  width:100%; height:46px; padding:10px 12px; border-radius:12px;
+  border:1px solid #2a3869; background:#0c1424; color:var(--text); outline:none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+}
+input:focus,select:focus{box-shadow: var(--ring-focus)}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{padding:6px 10px; border-radius:999px; border:1px solid #31427d; background:#0e1730; cursor:pointer; font-size:12px}
+.btnbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px}
+.errors{display:none; margin-top:10px; background:#2a1420; border:1px solid #5c2234; color:#ffd7de; padding:10px; border-radius:12px}
+
+/* KPIs & breakdown */
+.kpis{display:grid; gap:12px}
+@media(min-width:680px){.kpis{grid-template-columns:repeat(3,1fr)}}
+.kpi{background:#0d1630; border:1px solid #223165; border-radius:14px; padding:16px}
+.kpi .label{font-size:12px; color:var(--muted)}
+.kpi .value{font-size:22px; margin-top:6px}
+.value.ok{color:var(--brand-2)} .value.warn{color:#f59e0b} .value.danger{color:#ef4444}
+.divider{height:1px; background:#1d2745; margin:16px 0}
+details{border:1px solid #1c2540; border-radius:14px; background:#10182c; overflow:hidden}
+summary{padding:12px 14px; cursor:pointer; list-style:none}
+summary::-webkit-details-marker{display:none}
+details .section{padding:12px 14px 16px}
+.mono{font-family:var(--font-mono); font-size:13px; color:#b7c3e0}
+
+/* Loading overlay */
+#loadingOverlay{
+  position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(800px 400px at 50% 10%, rgba(117,89,255,.12), transparent 60%), var(--bg-0);
+  transition: opacity .6s cubic-bezier(.4,0,.2,1);
+}
+#loadingOverlay.hide{opacity:0; pointer-events:none}
+.loading-icon{width:84px; height:84px; animation:spin 1.2s linear infinite; display:block; filter: drop-shadow(0 0 16px rgba(117,89,255,.55))}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Focus */
+:focus-visible{outline:none; box-shadow: var(--ring-focus)}
+</style>
+</head>
+<body>
+
+<!-- Background grid -->
+<div class="bg-grid"></div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" role="status" aria-label="Loading">
+  <svg class="loading-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+    <defs><linearGradient id="gradBolt2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7559ff"/><stop offset="100%" stop-color="#38fbd0"/></linearGradient></defs>
+    <polygon points="24,4 44,28 32,28 48,60 20,32 34,32" fill="url(#gradBolt2)"/>
+  </svg>
+</div>
+
+<!-- Top navigation (shared) -->
+<div class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Wattrix home">
+      <svg class="bolt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7559ff"/><stop offset="1" stop-color="#38fbd0"/></linearGradient></defs>
+        <polygon points="24,4 44,28 32,28 48,60 20,32 34,32" fill="url(#g1)"/>
+      </svg>
+      <span class="name">WATTRIX</span>
+    </a>
+    <nav class="links" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="calculator.html" class="active">Calculator</a>
+      <a href="about.html">About</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn" href="about.html#faq">FAQ</a>
+      <a class="btn primary" href="index.html">Overview</a>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="container">
+    <h1>Trip energy, time, and cost</h1>
+    <p>Enter your values below. Results update instantly and stay on your device.</p>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="container section">
+  <div class="grid cols-2">
+    <!-- Inputs -->
+    <section class="card" aria-labelledby="inputs-title">
+      <h2 id="inputs-title" style="margin:0 0 12px 0;">Inputs</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label>Usable battery capacity (kWh)</label>
+          <input id="usableKWh" type="number" min="1" step="0.1" placeholder="e.g. 75">
+        </div>
+
+        <div class="field">
+          <label>Average efficiency</label>
+          <div class="pair">
+            <input id="whPerKm" type="text" inputmode="decimal" placeholder="e.g. 170">
+            <select id="unitDist">
+              <option value="km">Wh/km</option>
+              <option value="mi">Wh/mi</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Charger power (kW)</label>
+          <input id="chargerPower" type="text" inputmode="decimal" placeholder="e.g. 11" value="11">
+        </div>
+
+        <div class="field">
+          <label>Electricity price</label>
+          <div class="pair tight">
+            <input id="pricePerKWh" type="text" inputmode="decimal" placeholder="e.g. 0.20" value="0.20">
+            <select id="currency"><option>€</option><option>$</option><option>£</option></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Trip distance</label>
+          <div class="pair">
+            <input id="tripKm" type="text" inputmode="decimal" placeholder="e.g. 150">
+            <select id="distUnit"><option value="km">km</option><option value="mi">mi</option></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Safety buffer (%)</label>
+          <input id="bufferPct" type="text" inputmode="decimal" placeholder="0" value="0">
+          <div class="chips">
+            <button type="button" class="chip" data-buf="5">+5%</button>
+            <button type="button" class="chip" data-buf="10">+10%</button>
+            <button type="button" class="chip" data-buf="15">+15%</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Current charge (%)</label>
+          <input id="socFrom" type="text" inputmode="decimal" placeholder="e.g. 20" value="20">
+        </div>
+
+        <div class="field">
+          <label>Target charge (%)</label>
+          <input id="socTo" type="text" inputmode="decimal" placeholder="e.g. 80" value="80">
+        </div>
+
+        <div class="field">
+          <label>Planned charging before trip (hours)</label>
+          <input id="plannedChargeHours" type="text" inputmode="decimal" placeholder="e.g. 3">
+          <div id="chargeTimeHint" class="mono" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button id="copyBtn" class="btn">Copy results</button>
+        <button id="printBtn" class="btn">Print</button>
+        <div style="flex:1"></div>
+        <button id="resetBtn" class="btn">Reset</button>
+      </div>
+
+      <div id="errorBox" class="errors" role="alert" aria-live="polite"></div>
+    </section>
+
+    <!-- Results -->
+    <section class="card" aria-labelledby="results-title">
+      <h2 id="results-title" style="margin:0 0 12px 0;">Results</h2>
+
+      <div class="kpis" aria-live="polite">
+        <div class="kpi"><div class="label">Energy</div><div class="value ok" id="kpiEnergy">0.0 kWh</div></div>
+        <div class="kpi"><div class="label">Time</div><div class="value" id="kpiTime">0h 00m</div></div>
+        <div class="kpi"><div class="label">Cost</div><div class="value warn" id="kpiCost">€0.00</div></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <details open>
+        <summary>Breakdown</summary>
+        <div class="section">
+          <ul id="breakdown" style="margin:8px 0 0 20px"></ul>
+        </div>
+      </details>
+    </section>
+  </div>
+</main>
+
+<footer class="container" style="padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rgba(45,64,120,.35)">
+  &copy; 2025 <a href="https://fhatal.com" style="color:var(--brand-2); text-decoration:none;">Fhatal.com</a>
+</footer>
+
+<script>
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (n, a, b) => Math.min(Math.max(n, a), b);
+
+// Accept comma or dot decimals
+function num(v, def=0){
+  if (v == null) return def;
+  const n = parseFloat(String(v).replace(/\s+/g,'').replace(',', '.'));
+  return isFinite(n) ? n : def;
+}
+const fmt = (n, d=1) => isFinite(n) ? Number(n).toFixed(d) : '–';
+
+/* ---------- Local Storage ---------- */
+const STORAGE_KEY = 'wattrixInputs';
+function saveInputs(){
+  const ids = ['usableKWh','whPerKm','unitDist','chargerPower','pricePerKWh','currency','tripKm','distUnit','bufferPct','socFrom','socTo','plannedChargeHours'];
+  const data = {};
+  ids.forEach(id => { const el = $(id); if (el) data[id] = el.value; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function loadInputs(){
+  try{
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data) return;
+    Object.entries(data).forEach(([id,val]) => { const el = $(id); if (el) el.value = val; });
+  }catch(e){}
+}
+function clearInputs(){ localStorage.removeItem(STORAGE_KEY); }
+
+/* ---------- Core compute ---------- */
+function recompute(){
+  const cap = num($('usableKWh').value);
+  const effIn = num($('whPerKm').value);
+  const effUnit = $('unitDist').value;
+  const effWhPerKm = effUnit === 'mi' ? (effIn / 1.60934) : effIn;
+
+  const pwr = num($('chargerPower').value);
+  const price = num($('pricePerKWh').value);
+  const currency = $('currency').value;
+
+  const tripVal = num($('tripKm').value);
+  const distUnit = $('distUnit').value;
+  const distanceKm = distUnit === 'mi' ? (tripVal * 1.60934) : tripVal;
+
+  const buf = clamp(num($('bufferPct').value), 0, 50) / 100;
+  const from = clamp(num($('socFrom').value), 0, 100);
+  const to = clamp(num($('socTo').value), 0, 100);
+  const plannedChargeHours = num($('plannedChargeHours').value);
+
+  const errs = [];
+  if (cap <= 0) errs.push('Usable battery capacity must be greater than 0.');
+  if (effWhPerKm <= 0) errs.push('Average efficiency must be greater than 0.');
+  if (pwr <= 0) errs.push('Charger power should be greater than 0.');
+  if (distanceKm <= 0) errs.push('Trip distance must be greater than 0.');
+  if (from < 0 || from > 100) errs.push('Current charge % must be between 0 and 100.');
+  const errorBox = $('errorBox');
+  if (errs.length){ errorBox.style.display='block'; errorBox.innerHTML = errs.join('<br>'); }
+  else { errorBox.style.display='none'; errorBox.innerHTML=''; }
+
+  const tripKWh = (distanceKm * effWhPerKm / 1000) * (1 + buf);
+  const availableKWh = cap * from / 100;
+  const neededKWh = Math.max(tripKWh - availableKWh, 0);
+  const neededChargeHours = pwr > 0 ? neededKWh / pwr : 0;
+
+  const plannedAddedKWh = plannedChargeHours > 0 ? plannedChargeHours * pwr : 0;
+  const unclampedAfter = availableKWh + plannedAddedKWh;
+  const afterChargeKWh = Math.min(unclampedAfter, cap);
+  const afterChargeSOC = cap > 0 ? Math.min(afterChargeKWh / cap * 100, 100) : 0;
+
+  const destKWh = afterChargeKWh - tripKWh;
+  const destSOC = cap > 0 ? Math.max(destKWh / cap * 100, 0) : 0;
+
+  const neededCost = neededKWh * price;
+  const maxAddableKWh = Math.max(cap - availableKWh, 0);
+  const plannedCost = Math.min(plannedAddedKWh, maxAddableKWh) * price;
+
+  $('kpiEnergy').textContent = `${fmt(neededKWh)} kWh`;
+  const kH = Math.floor(neededChargeHours);
+  const kM = Math.round((neededChargeHours - kH) * 60);
+  $('kpiTime').textContent = `${kH}h ${kM.toString().padStart(2,'0')}m`;
+  $('kpiCost').textContent = `${currency}${fmt(neededCost,2)}`;
+
+  const lines = [];
+  lines.push(`<strong>Trip</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Distance: <b>${fmt(distanceKm)} km</b></li>`);
+  lines.push(`<li>Energy needed (with buffer): <b>${fmt(tripKWh)} kWh</b></li>`);
+  lines.push(`</ul>`);
+
+  lines.push(`<strong>Battery before charging</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Available: <b>${fmt(availableKWh)} kWh</b> (<b>${fmt(from)}%</b>)</li>`);
+  lines.push(`</ul>`);
+
+  lines.push(`<strong>Charging</strong>`);
+  lines.push(`<ul style="margin-top:2px">`);
+  lines.push(`<li>Energy shortfall: <b>${fmt(neededKWh)} kWh</b></li>`);
+  lines.push(`<li>Required time: <b>${kH}h ${kM.toString().padStart(2,'0')}m</b> @ <b>${fmt(pwr)} kW</b></li>`);
+  lines.push(`<li>Cost for required energy: <b>${currency}${fmt(neededCost,2)}</b></li>`);
+  lines.push(`</ul>`);
+
+  if (neededKWh > 0) {
+    lines.push(`<span style="color:var(--brand-2)"><b>Suggestion:</b> Charge at least <b>${kH}h ${kM.toString().padStart(2,'0')}m</b> before your trip.</span>`);
+  } else {
+    lines.push(`<span style="color:var(--brand-2)"><b>Suggestion:</b> Enough energy to reach destination.</span>`);
+  }
+
+  if (plannedChargeHours > 0) {
+    lines.push(`<strong><br>Planned charging</strong>`);
+    lines.push(`<ul style="margin-top:2px">`);
+    const actualAddedKWh = afterChargeKWh - availableKWh;
+    const actualHours = pwr > 0 ? actualAddedKWh / pwr : 0;
+    const h = Math.floor(actualHours);
+    const m = Math.round((actualHours - h) * 60);
+    lines.push(`<li>Energy added: <b>${fmt(actualAddedKWh)} kWh</b> / <b>${h}h ${m.toString().padStart(2,'0')}m</b></li>`);
+    lines.push(`<li>Battery after charging: <b>${fmt(afterChargeKWh)} kWh</b> (<b>${fmt(afterChargeSOC)}%</b>)</li>`);
+    if (destKWh < 0) {
+      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip! Charge more on the road.</span></li>`);
+    } else {
+      lines.push(`<li>Battery at destination: <b>${fmt(destKWh)} kWh</b> (<b>${fmt(destSOC)}%</b>)</li>`);
+    }
+    lines.push(`<li>Cost for planned charge: <b>${currency}${fmt(plannedCost,2)}</b></li>`);
+    lines.push(`</ul>`);
+  } else {
+    const destNoCharge = availableKWh - tripKWh;
+    const destSOCNo = cap > 0 ? Math.max(destNoCharge / cap * 100, 0) : 0;
+    lines.push(`<strong><br>After trip (no extra charging)</strong>`);
+    lines.push(`<ul style="margin-top:2px">`);
+    if (destNoCharge < 0) {
+      lines.push(`<li><span style="color:#ef4444"><b>At destination:</b> 0.0 kWh (0%)</span></li>`);
+      lines.push(`<li><span style="color:#ef4444"><b>Warning:</b> Not enough energy for trip! Charge en route.</span></li>`);
+    } else {
+      lines.push(`<li>Battery at destination: <b>${fmt(destNoCharge)} kWh</b> (<b>${fmt(destSOCNo)}%</b>)</li>`);
+    }
+    lines.push(`</ul>`);
+  }
+  $('breakdown').innerHTML = lines.join('');
+
+  // Hint: from -> to at given kW
+  let hint = '';
+  if (cap > 0 && pwr > 0 && to > from) {
+    const kWhNeed = cap * (to - from) / 100;
+    const hours = kWhNeed / pwr;
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    hint = `To charge from ${fmt(from,0)}% to ${fmt(to,0)}%: <b>${h}h ${m.toString().padStart(2,'0')}m</b> at ${fmt(pwr)} kW`;
+  } else if (to <= from) {
+    hint = 'Target charge must be greater than current charge.';
+  }
+  $('chargeTimeHint').innerHTML = hint;
+}
+
+/* ---------- Bindings ---------- */
+function bind(){
+  document.querySelectorAll('input, select').forEach(el=>{
+    el.addEventListener('input', ()=>{ recompute(); saveInputs(); });
+    el.addEventListener('change', ()=>{ recompute(); saveInputs(); });
+  });
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', ()=>{ $('bufferPct').value = c.dataset.buf; recompute(); saveInputs(); });
+  });
+  $('copyBtn').onclick = ()=> navigator.clipboard.writeText(($('breakdown').innerText||'').trim());
+  $('printBtn').onclick = ()=> window.print();
+  $('resetBtn').onclick = ()=>{
+    document.querySelectorAll('input[type="text"],input[type="number"]').forEach(i=> i.value='');
+    $('chargerPower').value='11'; $('pricePerKWh').value='0.20';
+    $('socFrom').value='20'; $('socTo').value='80'; $('bufferPct').value='0';
+    $('unitDist').value='km'; $('distUnit').value='km'; $('currency').value='€';
+    clearInputs(); recompute();
+  };
+}
+
+/* ---------- Loader + init ---------- */
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadInputs();
+  bind();
+  recompute();
+  setTimeout(()=>{
+    const overlay = document.getElementById('loadingOverlay');
+    overlay.classList.add('hide');
+    setTimeout(()=>overlay.remove(), 700);
+  }, 1200);
+});
+</script>
+</body>
+</html>

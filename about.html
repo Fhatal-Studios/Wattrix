@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Wattrix • EV Charge Planner</title>
+<title>Wattrix • About & FAQ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#070b14" />
 
@@ -14,10 +14,7 @@
 
 <style>
 /* =========================================================
-   WATTRIX / FIGMA TOKENS (Keep identical across all pages)
-   ---------------------------------------------------------
-   These act like Figma-style design tokens you’d configure
-   under "Local variables" (color/typography/effects/space).
+   WATTRIX / FIGMA TOKENS — keep IDENTICAL to other pages
    =======================================================*/
 :root{
   /* Color */
@@ -28,9 +25,9 @@
   --text:#e8ecf8;
   --muted:#9ba6bf;
 
-  --brand-1:#7559ff;   /* primary neon */
-  --brand-2:#38fbd0;   /* accent mint */
-  --brand-3:#2dd4ff;   /* sky accent */
+  --brand-1:#7559ff;
+  --brand-2:#38fbd0;
+  --brand-3:#2dd4ff;
 
   /* Gradients */
   --grad-hero: radial-gradient(1200px 700px at 20% -10%, rgba(117,89,255,.22), transparent 60%),
@@ -66,7 +63,7 @@ body{
 
 /* Global layout */
 .container{max-width:1200px; margin:0 auto; padding:0 var(--s-4);}
-.section{padding: var(--s-9) 0; position:relative}
+.section{padding: var(--s-8) 0; position:relative}
 
 /* Neon grid background */
 .bg-grid{
@@ -78,21 +75,7 @@ body{
   mask-image: radial-gradient(1000px 600px at 50% 10%, black 50%, transparent 100%);
 }
 
-/* Hero */
-.hero{
-  background: var(--grad-hero);
-  padding-top: var(--s-10);
-  padding-bottom: var(--s-9);
-  position:relative;
-  overflow:hidden;
-}
-.hero .orbs{
-  position:absolute; inset: -10% -10% auto -10%; pointer-events:none; filter: blur(60px); opacity:.35;
-  background:
-    radial-gradient(350px 220px at 20% 20%, rgba(117,89,255,.55), transparent 70%),
-    radial-gradient(420px 260px at 80% 25%, rgba(56,251,208,.45), transparent 70%),
-    radial-gradient(380px 240px at 60% 70%, rgba(45,212,255,.36), transparent 70%);
-}
+/* Nav (shared) */
 .nav{
   position:sticky; top:0; z-index:50;
   backdrop-filter: blur(10px);
@@ -103,9 +86,7 @@ body{
   max-width:1200px; margin:0 auto; padding: var(--s-2) var(--s-4);
   display:flex; align-items:center; gap:var(--s-3); justify-content:space-between;
 }
-.brand{
-  display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
-}
+.brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text)}
 .brand .bolt{width:32px; height:32px}
 .brand .name{font-weight:700; letter-spacing:.2px}
 .nav a{
@@ -114,11 +95,8 @@ body{
 }
 .nav a:hover{border-color:#2a3869}
 .nav a.active{
-  background: #0f1830; border:1px solid #2a3869;
+  background:#0f1830; border:1px solid #2a3869;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-}
-.nav-cta{
-  display:flex; gap:10px; align-items:center;
 }
 .btn{
   appearance:none; border:1px solid #2a3869; color:var(--text); background:#0c1429;
@@ -131,28 +109,22 @@ body{
   box-shadow: var(--shadow-sm);
 }
 
-/* Hero content */
-.hero h1{
-  font-size: clamp(36px, 6vw, 68px);
-  line-height:1.05;
-  letter-spacing:.2px;
-  margin:0;
+/* Header */
+.header{
+  padding: var(--s-9) 0 var(--s-6);
+  background: var(--grad-hero);
+  position:relative;
 }
-.hero .lead{
-  color:var(--muted);
-  font-size: clamp(16px, 2.2vw, 20px);
-  margin-top: var(--s-4);
+.header h1{
+  margin:0; font-size: clamp(34px, 5.5vw, 56px); line-height:1.05; letter-spacing:.2px;
 }
-.hero .cta-row{display:flex; gap:12px; margin-top: var(--s-6); flex-wrap:wrap}
-.badge{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 12px; border-radius:999px;
-  border:1px solid #2a3869; background:#0e1730; color:#d0d8ee; font-size:13px;
-}
+.header .lead{color:var(--muted); margin-top: var(--s-4); font-size: clamp(16px, 2.2vw, 20px)}
 
-/* Cards */
+/* Cards / blocks */
 .grid{display:grid; gap:16px}
-@media(min-width:900px){.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:960px){.grid.cols-2{grid-template-columns:1fr 1fr}}
+@media(min-width:1080px){.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+
 .card{
   position:relative; border-radius: var(--radius-xl);
   background: var(--grad-card);
@@ -160,24 +132,22 @@ body{
   box-shadow: var(--shadow-lg);
   padding:22px;
 }
-.card .title{font-weight:700; font-size:18px}
+.card h2{margin:0 0 8px 0; font-size:22px}
 .card .muted{color:var(--muted)}
-.card .mono{font-family:var(--font-mono); font-size:13px; color:#b7c3e0}
-.card .chip{display:inline-block; margin-top:10px; padding:6px 10px; border:1px solid #31427d; border-radius:999px; font-size:12px; background:#0e1730}
+.pill{display:inline-block; padding:6px 10px; border:1px solid #31427d; background:#0e1730; border-radius:999px; font-size:12px; margin:6px 8px 0 0}
+.mono{font-family:var(--font-mono); font-size:13px; color:#b7c3e0}
 
-/* Feature blocks */
-.feature{
-  padding:18px; border-radius: var(--radius-lg);
-  border:1px solid rgba(58,76,140,.55);
-  background: linear-gradient(180deg, rgba(22,30,62,.7), rgba(14,21,43,.6));
-}
-.feature h3{margin:0 0 6px 0; font-size:18px}
-.feature p{margin:0; color:var(--muted)}
+/* FAQ */
+details{border:1px solid #1c2540; border-radius:14px; background:#10182c; overflow:hidden}
+summary{padding:12px 14px; cursor:pointer; list-style:none}
+summary::-webkit-details-marker{display:none}
+details + details{margin-top:10px}
+.faq-body{padding:12px 14px 16px; color:#dbe3f0}
 
 /* Footer */
 footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rgba(45,64,120,.35)}
 
-/* Loading overlay (reuse on all pages) */
+/* Loading overlay (shared) */
 #loadingOverlay{
   position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
   background: radial-gradient(800px 400px at 50% 10%, rgba(117,89,255,.12), transparent 60%), var(--bg-0);
@@ -187,13 +157,13 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
 .loading-icon{width:84px; height:84px; animation:spin 1.2s linear infinite; display:block; filter: drop-shadow(0 0 16px rgba(117,89,255,.55))}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Accessibility focus */
+/* Focus */
 :focus-visible{outline:none; box-shadow: var(--ring-focus)}
 </style>
 </head>
 <body>
 
-<!-- Neon grid + aura -->
+<!-- Neon grid background -->
 <div class="bg-grid"></div>
 
 <!-- Loading overlay -->
@@ -208,7 +178,7 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
   </svg>
 </div>
 
-<!-- Top navigation (shared across pages) -->
+<!-- Top navigation (shared) -->
 <div class="nav">
   <div class="nav-inner">
     <a class="brand" href="index.html" aria-label="Wattrix home">
@@ -220,75 +190,136 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
     </a>
 
     <nav class="links" aria-label="Primary">
-      <a href="index.html" class="active">Home</a>
+      <a href="index.html">Home</a>
       <a href="calculator.html">Calculator</a>
-      <a href="about.html">About</a>
+      <a href="about.html" class="active">About</a>
     </nav>
 
     <div class="nav-cta">
-      <a class="btn" href="about.html#faq">FAQ</a>
+      <a class="btn" href="#faq">FAQ</a>
       <a class="btn primary" href="calculator.html">Open Calculator</a>
     </div>
   </div>
 </div>
 
-<!-- Hero -->
-<section class="hero section">
-  <div class="orbs"></div>
+<!-- Header -->
+<header class="header">
   <div class="container">
-    <span class="badge">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="#38fbd0" aria-hidden="true"><path d="M12 2l3 7h7l-5.5 4.1L18 21l-6-4-6 4 1.5-7.9L2 9h7z"/></svg>
-      Futuristic EV planning
-    </span>
-    <h1>Plan energy, time, and cost — fast.</h1>
-    <p class="lead">Wattrix estimates trip energy needs, charging time, and approximate cost. Designed with neon-glass UI, accessible tokens, and a smooth loading flow.</p>
-    <div class="cta-row">
-      <a class="btn primary" href="calculator.html">Start calculating</a>
-      <a class="btn" href="about.html">Learn more</a>
-    </div>
+    <h1>About Wattrix</h1>
+    <p class="lead">A local-first EV planning toolkit. Design tokens match across pages, UI remains consistent, and results stay on your device.</p>
   </div>
-</section>
+</header>
 
-<!-- Highlights -->
-<section class="section">
-  <div class="container grid cols-3">
-    <article class="card">
-      <div class="title">Local-first</div>
-      <p class="muted">All math runs in your browser. No account is required and inputs can be saved locally.</p>
-      <span class="chip mono">LocalStorage</span>
-    </article>
+<main>
+  <!-- About -->
+  <section class="section">
+    <div class="container grid cols-2">
+      <article class="card">
+        <h2>Purpose</h2>
+        <p class="muted">Trip energy, time, and cost get estimated quickly. Inputs are kept simple, the breakdown is readable, and conservative planning is encouraged.</p>
+        <div class="mono" style="margin-top:10px">Usable kWh • Wh/km or Wh/mi • kW • Buffer • Price/kWh</div>
+        <div style="margin-top:10px">
+          <span class="pill">Local-first</span>
+          <span class="pill">No signup</span>
+          <span class="pill">Instant results</span>
+        </div>
+      </article>
 
-    <article class="card">
-      <div class="title">Realistic knobs</div>
-      <p class="muted">Usable kWh, Wh/km or Wh/mi, charger kW, buffer, and price per kWh. Clear results with trip breakdown.</p>
-      <span class="chip mono">Wh/km • kW • €/kWh</span>
-    </article>
-
-    <article class="card">
-      <div class="title">Figma-ready tokens</div>
-      <p class="muted">Identical color, type, and effect variables across pages. Easy to port into Figma variables.</p>
-      <span class="chip mono">Design tokens</span>
-    </article>
-  </div>
-</section>
-
-<!-- Features -->
-<section class="section">
-  <div class="container grid cols-3">
-    <div class="feature">
-      <h3>Rapid inputs</h3>
-      <p>Enter capacity, efficiency, and power. Get an instant estimate and a readable breakdown.</p>
+      <article class="card">
+        <h2>Design system</h2>
+        <p class="muted">Figma-style tokens define color, typography, radii, shadows, and gradients. The same variables power every page for a cohesive futuristic look.</p>
+        <div class="mono" style="margin-top:10px">:root → brand-1/2/3 • grad-hero • grad-card • radius-xl</div>
+        <div style="margin-top:10px">
+          <span class="pill">Neon glass</span>
+          <span class="pill">Conic borders</span>
+          <span class="pill">Accessible focus</span>
+        </div>
+      </article>
     </div>
-    <div class="feature">
-      <h3>Charging guidance</h3>
-      <p>See the minimum time to cover energy shortfall and plan a pre-trip top-up.</p>
+  </section>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="container grid cols-3">
+      <article class="card">
+        <h2>Inputs</h2>
+        <p class="muted">Capacity, efficiency, charger power, price, distance, buffer, state of charge, and planned pre-trip charging are supported.</p>
+      </article>
+      <article class="card">
+        <h2>Computation</h2>
+        <p class="muted">Energy shortfall and time at the given kW are derived. A clear suggestion line indicates a minimum top-up time before departure.</p>
+      </article>
+      <article class="card">
+        <h2>Output</h2>
+        <p class="muted">KPIs summarize energy, time, and cost. A breakdown lists assumptions, shortfall, and destination battery state.</p>
+      </article>
     </div>
-    <div class="feature">
-      <h3>Consistent styling</h3>
-      <p>Neon glass cards, conic borders, and focus rings deliver a cohesive futuristic style.</p>
+  </section>
+
+  <!-- Privacy & Disclaimer -->
+  <section class="section">
+    <div class="container grid cols-2">
+      <article class="card">
+        <h2>Privacy</h2>
+        <p class="muted">Inputs are stored locally in your browser (LocalStorage). Data is not transmitted to servers.</p>
+      </article>
+      <article class="card">
+        <h2>Disclaimer</h2>
+        <p class="muted">Results are estimates. Actual consumption, charging speed, and availability vary. Extra buffer is recommended for unfamiliar routes and harsh conditions.</p>
+      </article>
     </div>
-  </div>
-</section>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="section">
+    <div class="container">
+      <article class="card">
+        <h2>Roadmap</h2>
+        <ul class="muted" style="margin:10px 0 0 18px">
+          <li>Optional Finnish/English content toggle</li>
+          <li>Per-vehicle efficiency presets and seasonal multipliers</li>
+          <li>Multi-stop planning with per-stop power and price</li>
+          <li>Export of breakdown as PDF</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <article class="card">
+        <h2 id="faq-title">FAQ</h2>
+        <div class="muted" style="margin-bottom:10px">Common questions and concise answers.</div>
+
+        <details open>
+          <summary>Are prices or efficiency real-time?</summary>
+          <div class="faq-body">No. Static inputs are used. A preferred kWh price and a realistic efficiency value should be entered.</div>
+        </details>
+
+        <details>
+          <summary>Does AC vs DC charging get modeled?</summary>
+          <div class="faq-body">A linear time estimate is provided at the entered kW. Real DC charging tapers at higher states of charge, so a conservative kW value is recommended.</div>
+        </details>
+
+        <details>
+          <summary>How should efficiency be entered?</summary>
+          <div class="faq-body">Wh/km or Wh/mi may be used. Speed, temperature, wind, elevation, and load influence the correct value strongly.</div>
+        </details>
+
+        <details>
+          <summary>Will the app require an account?</summary>
+          <div class="faq-body">No. The tool is local-first and account-free. Inputs can be retained via LocalStorage.</div>
+        </details>
+
+        <details>
+          <summary>Who builds Wattrix and how can feedback be sent?</summary>
+          <div class="faq-body">Wattrix is produced by Fhatal Studios. Ideas and issues can be shared via <a href="https://fhatal.com" target="_blank" rel="noopener">Fhatal.com</a>.</div>
+        </details>
+      </article>
+    </div>
+  </section>
+</main>
 
 <footer>
   &copy; 2025 <a href="https://fhatal.com" style="color:var(--brand-2); text-decoration:none;">Fhatal.com</a>
