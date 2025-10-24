@@ -102,6 +102,17 @@ body{
 .nav-inner{
   max-width:1200px; margin:0 auto; padding: var(--s-2) var(--s-4);
   display:flex; align-items:center; gap:var(--s-3); justify-content:space-between;
+  flex-wrap:wrap;
+}
+@media(max-width:700px){
+  .nav-inner{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .nav .brand{margin-bottom:8px;}
+  .nav .links{margin-bottom:8px;}
+  .nav-cta{width:100%; display:flex; gap:10px; flex-wrap:wrap;}
 }
 .brand{
   display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
@@ -150,9 +161,17 @@ body{
   border:1px solid #2a3869; background:#0e1730; color:#d0d8ee; font-size:13px;
 }
 
-/* Cards */
+/* Responsive grid improvements */
 .grid{display:grid; gap:16px}
 @media(min-width:900px){.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:899px){.grid.cols-3{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .container{padding:0 8px;}
+  .section{padding:32px 0;}
+  .hero .cta-row{flex-direction:column; gap:8px;}
+}
+
+/* Cards */
 .card{
   position:relative; border-radius: var(--radius-xl);
   background: var(--grad-card);
@@ -265,9 +284,9 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
     </article>
 
     <article class="card">
-      <div class="title">Figma-ready tokens</div>
-      <p class="muted">Identical color, type, and effect variables across pages. Easy to port into Figma variables.</p>
-      <span class="chip mono">Design tokens</span>
+      <div class="title">Privacy-first</div>
+      <p class="muted">Your data stays on your device. No tracking, no cloud sync, and no ads. Plan trips securely and privately.</p>
+      <span class="chip mono">No tracking</span>
     </article>
   </div>
 </section>
