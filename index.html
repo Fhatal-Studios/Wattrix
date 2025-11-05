@@ -15,9 +15,6 @@
 <style>
 /* =========================================================
    WATTRIX / FIGMA TOKENS (Keep identical across all pages)
-   ---------------------------------------------------------
-   These act like Figma-style design tokens you’d configure
-   under "Local variables" (color/typography/effects/space).
    =======================================================*/
 :root{
   /* Color */
@@ -105,11 +102,7 @@ body{
   flex-wrap:wrap;
 }
 @media(max-width:700px){
-  .nav-inner{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:12px;
-  }
+  .nav-inner{flex-direction:column; align-items:flex-start; gap:12px;}
   .nav .brand{margin-bottom:8px;}
   .nav .links{margin-bottom:8px;}
   .nav-cta{width:100%; display:flex; gap:10px; flex-wrap:wrap;}
@@ -128,9 +121,7 @@ body{
   background: #0f1830; border:1px solid #2a3869;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
 }
-.nav-cta{
-  display:flex; gap:10px; align-items:center;
-}
+.nav-cta{display:flex; gap:10px; align-items:center;}
 .btn{
   appearance:none; border:1px solid #2a3869; color:var(--text); background:#0c1429;
   padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
@@ -195,6 +186,7 @@ body{
 
 /* Footer */
 footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rgba(45,64,120,.35)}
+footer .btn-inline{margin-left:8px}
 
 /* Loading overlay (reuse on all pages) */
 #loadingOverlay{
@@ -208,6 +200,38 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
 
 /* Accessibility focus */
 :focus-visible{outline:none; box-shadow: var(--ring-focus)}
+
+/* =========================
+   Cookie banner + modal
+   =========================*/
+.cookie-banner{
+  position: fixed; left:0; right:0; bottom:0; z-index:60; padding:14px;
+  background: linear-gradient(180deg, rgba(21,30,58,.85), rgba(13,21,43,.85));
+  border-top: 1px solid rgba(58,76,140,.55);
+  box-shadow: 0 -12px 40px rgba(0,0,0,.35);
+}
+.cb-inner{max-width:980px; margin:0 auto; display:grid; gap:12px; align-items:center; grid-template-columns:1fr}
+.cb-text{font-size:14px}
+.cb-text small{color: var(--muted)}
+.cb-actions{display:flex; gap:10px; flex-wrap:wrap}
+.cb-actions .btn{padding:10px 14px; border-radius:12px}
+.cb-actions .btn.primary{background: linear-gradient(90deg, rgba(117,89,255,.22), rgba(56,251,208,.22)); border-image: var(--grad-border) 1}
+@media(min-width:720px){ .cb-inner{grid-template-columns:1fr auto} }
+.cb-hidden{display:none}
+
+.modal-backdrop{position:fixed; inset:0; z-index:70; display:none; background: rgba(5,8,16,.6); backdrop-filter: blur(8px);}
+.modal{max-width:720px; margin:10vh auto; border-radius:18px; border:1px solid rgba(58,76,140,.55);
+  background: linear-gradient(180deg, rgba(22,30,62,.9), rgba(14,21,43,.9)); box-shadow: var(--shadow-lg); padding:20px}
+.modal h3{margin:0 0 10px 0}
+.row{display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid rgba(45,64,120,.35)}
+.row:first-of-type{border-top:none}
+.switch{display:inline-flex; align-items:center; gap:10px}
+.switch input{width:40px; height:22px; appearance:none; background:#23305c; border-radius:999px; position:relative; outline:none; cursor:pointer; border:1px solid #31427d}
+.switch input:checked{background:#3051c7}
+.switch input::after{content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s}
+.switch input:checked::after{left:20px}
+.lock{font-size:12px; color:#9fb0d8}
+.modal-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:14px}
 </style>
 </head>
 <body>
@@ -311,7 +335,61 @@ footer{padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rg
 
 <footer>
   &copy; 2025 <a href="https://fhatal.com" style="color:var(--brand-2); text-decoration:none;">Fhatal.com</a>
+  · <button id="footerManageCookies" class="btn btn-inline" type="button">Manage cookies</button>
 </footer>
+
+<!-- ===== Cookie banner (first layer) ===== -->
+<div id="cookieBanner" class="cookie-banner cb-hidden" role="region" aria-label="Cookie notice">
+  <div class="cb-inner">
+    <div class="cb-text">
+      <strong>We use cookies for site functionality, analytics, and ads.</strong><br />
+      <small><em>Sivuston toiminnan ja turvallisuuden kannalta välttämättömät evästeet</em> are always on. Choose the rest below.</small>
+    </div>
+    <div class="cb-actions">
+      <button class="btn" id="cb-reject">Reject non-essential</button>
+      <button class="btn" id="cb-customize">Customize</button>
+      <button class="btn primary" id="cb-accept">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Preferences modal (second layer) ===== -->
+<div id="cookieModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cookieTitle">
+    <h3 id="cookieTitle">Cookie Preferences</h3>
+    <p class="mono">Select what you want to allow. Necessary cookies are always on.</p>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Necessary</strong> <span class="lock">(always active)</span>
+        <div class="mono">Security, load balancing, consent storage.</div>
+      </div>
+      <div class="switch"><input type="checkbox" checked disabled aria-label="Necessary cookies always active"></div>
+    </div>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Analytics</strong>
+        <div class="mono">Anonymous/aggregated usage measurement (e.g., page views).</div>
+      </div>
+      <div class="switch"><input id="consent-analytics" type="checkbox" aria-label="Enable analytics"></div>
+    </div>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Ads/Marketing</strong>
+        <div class="mono">Ad delivery and measurement. May involve partners setting cookies.</div>
+      </div>
+      <div class="switch"><input id="consent-ads" type="checkbox" aria-label="Enable ads and marketing"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="modal-reject">Reject non-essential</button>
+      <button class="btn primary" id="modal-save">Save choices</button>
+      <button class="btn" id="modal-accept">Accept all</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* Loading overlay — identical logic across pages */
@@ -322,6 +400,110 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => overlay.remove(), 700);
   }, 1200);
 });
+
+/* ---------- Consent Manager (same key site-wide) ---------- */
+(function(){
+  const $ = id => document.getElementById(id);
+  const KEY='wattrix_cookie_consent_v2';
+  const banner=$('cookieBanner');
+  const modal=$('cookieModal');
+  const aChk=$('consent-analytics');
+  const mChk=$('consent-ads');
+
+  function getConsent(){ try{return JSON.parse(localStorage.getItem(KEY))||null;}catch(e){return null;} }
+  function setConsent(obj){
+    localStorage.setItem(KEY, JSON.stringify({...obj, ts:new Date().toISOString(), v:2}));
+  }
+  function showBanner(){ banner.classList.remove('cb-hidden'); }
+  function hideBanner(){ banner.classList.add('cb-hidden'); }
+  function openModal(){ modal.style.display='block'; modal.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); }
+
+  // Convert any <script type="text/plain" data-consent="..."> if you add such blocks (optional)
+  function runDeferredScripts(consent){
+    const allowed = new Set(['necessary']);
+    if(consent.analytics) allowed.add('analytics');
+    if(consent.ads)       allowed.add('ads');
+    document.querySelectorAll('script[type="text/plain"][data-consent]').forEach(tag=>{
+      const need = tag.getAttribute('data-consent');
+      if(!allowed.has(need)) return;
+      const s=document.createElement('script');
+      for(const {name,value} of Array.from(tag.attributes)){
+        if(name==='type' || name==='data-consent') continue;
+        s.setAttribute(name,value);
+      }
+      s.text = tag.text;
+      tag.parentNode.replaceChild(s, tag);
+    });
+  }
+
+  const saved=getConsent();
+  if(!saved){ showBanner(); } else { runDeferredScripts(saved); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(saved); }
+
+  $('cb-reject').onclick = ()=>{ const c={necessary:true, analytics:false, ads:false}; setConsent(c); hideBanner(); closeModal(); };
+  $('cb-accept').onclick = ()=>{ const c={necessary:true, analytics:true, ads:true}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+  $('cb-customize').onclick = ()=>{ const c=saved||{necessary:true, analytics:false, ads:false}; if(aChk) aChk.checked=!!c.analytics; if(mChk) mChk.checked=!!c.ads; openModal(); };
+
+  $('modal-reject').onclick = ()=>{ const c={necessary:true, analytics:false, ads:false}; setConsent(c); hideBanner(); closeModal(); };
+  $('modal-accept').onclick = ()=>{ const c={necessary:true, analytics:true, ads:true}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+  $('modal-save').onclick = ()=>{ const c={necessary:true, analytics:!!aChk.checked, ads:!!mChk.checked}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+
+  const manage = ()=>{ const c=getConsent()||{necessary:true, analytics:false, ads:false}; if(aChk) aChk.checked=!!c.analytics; if(mChk) mChk.checked=!!c.ads; openModal(); };
+  const m2=$('footerManageCookies'); if(m2) m2.onclick=manage;
+})();
+</script>
+
+<!-- ✅ Google Analytics 4 + AdSense loader (Consent Mode v2) -->
+<script>
+(function(){
+  const GA_ID = 'G-WPLMYR2M1F';                 
+  const ADS_CLIENT = 'ca-pub-2697517525197581'; 
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  window.__wattrixLoadGtag = function(consent){
+    if (window.__gtagLoaded) {
+      gtag('consent', 'update', {
+        ad_storage: consent.ads ? 'granted' : 'denied',
+        ad_user_data: consent.ads ? 'granted' : 'denied',
+        ad_personalization: consent.ads ? 'granted' : 'denied',
+        analytics_storage: consent.analytics ? 'granted' : 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted'
+      });
+      return;
+    }
+
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+    document.head.appendChild(s);
+
+    window.__gtagLoaded = true;
+    gtag('js', new Date());
+
+    gtag('consent', 'default', {
+      ad_storage: consent.ads ? 'granted' : 'denied',
+      ad_user_data: consent.ads ? 'granted' : 'denied',
+      ad_personalization: consent.ads ? 'granted' : 'denied',
+      analytics_storage: consent.analytics ? 'granted' : 'denied',
+      functionality_storage: 'granted',
+      security_storage: 'granted'
+    });
+
+    gtag('config', GA_ID, { anonymize_ip: true });
+
+    if (consent.ads) {
+      const s2 = document.createElement('script');
+      s2.async = true;
+      s2.crossOrigin = 'anonymous';
+      s2.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(ADS_CLIENT);
+      s2.setAttribute('data-ad-client', ADS_CLIENT);
+      document.head.appendChild(s2);
+    }
+  };
+})();
 </script>
 </body>
 </html>

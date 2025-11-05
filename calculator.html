@@ -25,7 +25,6 @@
   --radius-xl:24px; --radius-lg:18px; --radius-md:14px;
   --shadow-lg:0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
   --shadow-sm:0 8px 24px rgba(0,0,0,.35);
-  --glass:backdrop-filter: blur(16px);
   --ring-focus:0 0 0 4px rgba(117,89,255,.25);
   --font-sans:'Space Grotesk', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -90,14 +89,14 @@ body{margin:0; color:var(--text); background:var(--bg-0); font:16px/1.6 var(--fo
 .header h1{margin:0; font-size: clamp(28px, 4.8vw, 42px)}
 .header p{margin-top: var(--s-3); color:var(--muted)}
 
-/* Responsive grid improvements */
+/* Grid */
 .grid{display:grid; gap:16px}
 @media(min-width:960px){.grid.cols-2{grid-template-columns:1.1fr 1fr}}
 @media(max-width:959px){.grid.cols-2{grid-template-columns:1fr}}
 @media(max-width:600px){
-  .container{padding:0 8px;}
-  .section{padding:32px 0;}
-  .btnbar{flex-direction:column; gap:8px;}
+  .container{padding:0 8px}
+  .section{padding:32px 0}
+  .btnbar{flex-direction:column; gap:8px}
 }
 
 /* Cards */
@@ -132,7 +131,7 @@ input[type=number]{-moz-appearance:textfield}
 .btnbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px}
 .errors{display:none; margin-top:10px; background:#2a1420; border:1px solid #5c2234; color:#ffd7de; padding:10px; border-radius:12px}
 
-/* KPIs & breakdown */
+/* KPIs */
 .kpis{display:grid; gap:12px}
 @media(min-width:680px){.kpis{grid-template-columns:repeat(3,1fr)}}
 .kpi{background:#0d1630; border:1px solid #223165; border-radius:14px; padding:16px}
@@ -146,7 +145,7 @@ summary::-webkit-details-marker{display:none}
 details .section{padding:12px 14px 16px}
 .mono{font-family:var(--font-mono); font-size:13px; color:#b7c3e0}
 
-/* Loading overlay */
+/* Loader */
 #loadingOverlay{
   position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
   background: radial-gradient(800px 400px at 50% 10%, rgba(117,89,255,.12), transparent 60%), var(--bg-0);
@@ -158,6 +157,38 @@ details .section{padding:12px 14px 16px}
 
 /* Focus */
 :focus-visible{outline:none; box-shadow: var(--ring-focus)}
+
+/* ===== Cookie banner + modal ===== */
+.cookie-banner{
+  position: fixed; left:0; right:0; bottom:0; z-index:60; padding:14px;
+  background: linear-gradient(180deg, rgba(21,30,58,.85), rgba(13,21,43,.85));
+  border-top: 1px solid rgba(58,76,140,.55); box-shadow: 0 -12px 40px rgba(0,0,0,.35);
+}
+.cb-inner{max-width:980px; margin:0 auto; display:grid; gap:12px; align-items:center; grid-template-columns:1fr}
+.cb-text{font-size:14px}
+.cb-text small{color:var(--muted)}
+.cb-actions{display:flex; gap:10px; flex-wrap:wrap}
+.cb-actions .btn{padding:10px 14px; border-radius:12px}
+.cb-actions .btn.primary{background: linear-gradient(90deg, rgba(117,89,255,.22), rgba(56,251,208,.22)); border-image: var(--grad-border) 1}
+@media(min-width:720px){ .cb-inner{grid-template-columns:1fr auto} }
+.cb-hidden{display:none}
+
+.modal-backdrop{
+  position:fixed; inset:0; z-index:70; display:none;
+  background: rgba(5,8,16,.6); backdrop-filter: blur(8px);
+}
+.modal{max-width:720px; margin:10vh auto; border-radius:18px; border:1px solid rgba(58,76,140,.55);
+  background: linear-gradient(180deg, rgba(22,30,62,.9), rgba(14,21,43,.9)); box-shadow: var(--shadow-lg); padding:20px}
+.modal h3{margin:0 0 10px 0}
+.row{display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid rgba(45,64,120,.35)}
+.row:first-of-type{border-top:none}
+.switch{display:inline-flex; align-items:center; gap:10px}
+.switch input{width:40px; height:22px; appearance:none; background:#23305c; border-radius:999px; position:relative; outline:none; cursor:pointer; border:1px solid #31427d}
+.switch input:checked{background:#3051c7}
+.switch input::after{content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s}
+.switch input:checked::after{left:20px}
+.lock{font-size:12px; color:#9fb0d8}
+.modal-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:14px}
 </style>
 </head>
 <body>
@@ -189,7 +220,7 @@ details .section{padding:12px 14px 16px}
       <a href="about.html">About</a>
     </nav>
     <div class="nav-cta">
-      <a class="btn" href="about.html#faq">FAQ</a>
+      <a class="btn" href="#faq">FAQ</a>
       <a class="btn primary" href="index.html">Overview</a>
     </div>
   </div>
@@ -306,9 +337,120 @@ details .section{padding:12px 14px 16px}
   </div>
 </main>
 
+<!-- Privacy & Cookies FAQ -->
+<section id="faq" class="container section" aria-label="Privacy & Cookies FAQ">
+  <div class="card">
+    <h2 style="margin-top:0">Privacy & Cookies — FAQ</h2>
+
+    <details open>
+      <summary><strong>What cookies and storage do you use?</strong></summary>
+      <div class="section">
+        <p><em>Sivuston toiminnan ja turvallisuuden kannalta välttämättömät evästeet</em> (strictly necessary) are always on. Optional cookies include <b>Analytics</b> and <b>Ads/Marketing</b>. We also use <code>localStorage</code> to keep your calculator inputs on your device.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><strong>Legal bases (EU GDPR / ePrivacy)</strong></summary>
+      <div class="section">
+        <ul>
+          <li><b>Strictly necessary:</b> allowed without consent to provide a service you request (Art. 6(1)(b)/(f)).</li>
+          <li><b>Analytics and Ads/Marketing:</b> require prior, freely given, specific, informed, unambiguous <b>opt-in consent</b> (Art. 6(1)(a)). You can withdraw anytime.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><strong>Do you share data with third parties?</strong></summary>
+      <div class="section">
+        <p>Only if you opt in. Analytics data may be sent to Google Analytics 4. Ads data may be shared with Google AdSense and ad partners.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><strong>Retention</strong></summary>
+      <div class="section">
+        <ul>
+          <li><b>Consent record:</b> stored in your browser until changed or cleared.</li>
+          <li><b>Analytics/ads cookies:</b> per vendor defaults; see Google’s policies.</li>
+          <li><b>Calculator inputs:</b> remain in your browser until you reset or clear site data.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary><strong>How do I change my choice or exercise rights?</strong></summary>
+      <div class="section">
+        <ul>
+          <li>Click <button id="manageCookies" class="btn" type="button">Manage cookies</button> to reopen preferences.</li>
+          <li>Clear site data in your browser to remove local data.</li>
+          <li>For GDPR rights (access, erasure, etc.), contact: <a href="mailto:privacy@fhatal.com">privacy@fhatal.com</a>.</li>
+        </ul>
+      </div>
+    </details>
+
+    <p class="mono" style="margin:10px 0 0">
+      Controller: Fhatal Studios • Purposes: service delivery, analytics (optional), ads/marketing (optional)
+    </p>
+  </div>
+</section>
+
 <footer class="container" style="padding:24px 0; color:#a7b3ce; text-align:center; border-top:1px solid rgba(45,64,120,.35)">
-  &copy; 2025 <a href="https://fhatal.com" style="color:var(--brand-2); text-decoration:none;">Fhatal.com</a>
+  &copy; 2025 <a href="https://fhatal.com" style="color:var(--brand-2); text-decoration:none;">Fhatal.com</a> ·
+  <button id="footerManageCookies" class="btn" type="button" style="margin-left:8px">Manage cookies</button>
 </footer>
+
+<!-- ===== Cookie banner (first layer) ===== -->
+<div id="cookieBanner" class="cookie-banner cb-hidden" role="region" aria-label="Cookie notice">
+  <div class="cb-inner">
+    <div class="cb-text">
+      <strong>We use cookies for site functionality, analytics, and ads.</strong><br />
+      <small><em>Sivuston toiminnan ja turvallisuuden kannalta välttämättömät evästeet</em> are always on. Choose the rest below.</small>
+    </div>
+    <div class="cb-actions">
+      <button class="btn" id="cb-reject">Reject non-essential</button>
+      <button class="btn" id="cb-customize">Customize</button>
+      <button class="btn primary" id="cb-accept">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Preferences modal (second layer) ===== -->
+<div id="cookieModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cookieTitle">
+    <h3 id="cookieTitle">Cookie Preferences</h3>
+    <p class="mono">Select what you want to allow. Necessary cookies are always on.</p>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Necessary</strong> <span class="lock">(always active)</span>
+        <div class="mono">Security, load balancing, consent storage.</div>
+      </div>
+      <div class="switch"><input type="checkbox" checked disabled aria-label="Necessary cookies always active"></div>
+    </div>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Analytics</strong>
+        <div class="mono">Anonymous/aggregated usage measurement (e.g., page views).</div>
+      </div>
+      <div class="switch"><input id="consent-analytics" type="checkbox" aria-label="Enable analytics"></div>
+    </div>
+
+    <div class="row">
+      <div style="flex:1">
+        <strong>Ads/Marketing</strong>
+        <div class="mono">Ad delivery and measurement. May involve partners setting cookies.</div>
+      </div>
+      <div class="switch"><input id="consent-ads" type="checkbox" aria-label="Enable ads and marketing"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="modal-reject">Reject non-essential</button>
+      <button class="btn primary" id="modal-save">Save choices</button>
+      <button class="btn" id="modal-accept">Accept all</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ---------- Helpers ---------- */
@@ -495,6 +637,110 @@ window.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(()=>overlay.remove(), 700);
   }, 1200);
 });
+
+/* ---------- Consent Manager (same key site-wide) ---------- */
+(function(){
+  const $ = id => document.getElementById(id);
+  const KEY='wattrix_cookie_consent_v2';
+  const banner=$('cookieBanner');
+  const modal=$('cookieModal');
+  const aChk=$('consent-analytics');
+  const mChk=$('consent-ads');
+
+  function getConsent(){ try{return JSON.parse(localStorage.getItem(KEY))||null;}catch(e){return null;} }
+  function setConsent(obj){
+    localStorage.setItem(KEY, JSON.stringify({...obj, ts:new Date().toISOString(), v:2}));
+  }
+  function showBanner(){ banner.classList.remove('cb-hidden'); }
+  function hideBanner(){ banner.classList.add('cb-hidden'); }
+  function openModal(){ modal.style.display='block'; modal.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); }
+
+  function runDeferredScripts(consent){
+    const allowed = new Set(['necessary']);
+    if(consent.analytics) allowed.add('analytics');
+    if(consent.ads)       allowed.add('ads');
+    document.querySelectorAll('script[type="text/plain"][data-consent]').forEach(tag=>{
+      const need = tag.getAttribute('data-consent');
+      if(!allowed.has(need)) return;
+      const s=document.createElement('script');
+      for(const {name,value} of Array.from(tag.attributes)){
+        if(name==='type' || name==='data-consent') continue;
+        s.setAttribute(name,value);
+      }
+      s.text = tag.text;
+      tag.parentNode.replaceChild(s, tag);
+    });
+  }
+
+  const saved=getConsent();
+  if(!saved){ showBanner(); } else { runDeferredScripts(saved); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(saved); }
+
+  $('cb-reject').onclick = ()=>{ const c={necessary:true, analytics:false, ads:false}; setConsent(c); hideBanner(); closeModal(); };
+  $('cb-accept').onclick = ()=>{ const c={necessary:true, analytics:true, ads:true}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+  $('cb-customize').onclick = ()=>{ const c=saved||{necessary:true, analytics:false, ads:false}; if(aChk) aChk.checked=!!c.analytics; if(mChk) mChk.checked=!!c.ads; openModal(); };
+
+  $('modal-reject').onclick = ()=>{ const c={necessary:true, analytics:false, ads:false}; setConsent(c); hideBanner(); closeModal(); };
+  $('modal-accept').onclick = ()=>{ const c={necessary:true, analytics:true, ads:true}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+  $('modal-save').onclick = ()=>{ const c={necessary:true, analytics:!!aChk.checked, ads:!!mChk.checked}; setConsent(c); hideBanner(); closeModal(); runDeferredScripts(c); if (window.__wattrixLoadGtag) window.__wattrixLoadGtag(c); };
+
+  const manage = ()=>{ const c=getConsent()||{necessary:true, analytics:false, ads:false}; if(aChk) aChk.checked=!!c.analytics; if(mChk) mChk.checked=!!c.ads; openModal(); };
+  const m1=$('manageCookies'); if(m1) m1.onclick=manage;
+  const m2=$('footerManageCookies'); if(m2) m2.onclick=manage;
+})();
+</script>
+
+<!-- ✅ Google Analytics 4 + AdSense loader (Consent Mode v2) -->
+<script>
+(function(){
+ const GA_ID = 'G-WPLMYR2M1F';                 
+  const ADS_CLIENT = 'ca-pub-2697517525197581';
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  window.__wattrixLoadGtag = function(consent){
+    if (window.__gtagLoaded) {
+      gtag('consent', 'update', {
+        ad_storage: consent.ads ? 'granted' : 'denied',
+        ad_user_data: consent.ads ? 'granted' : 'denied',
+        ad_personalization: consent.ads ? 'granted' : 'denied',
+        analytics_storage: consent.analytics ? 'granted' : 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted'
+      });
+      return;
+    }
+
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+    document.head.appendChild(s);
+
+    window.__gtagLoaded = true;
+    gtag('js', new Date());
+
+    gtag('consent', 'default', {
+      ad_storage: consent.ads ? 'granted' : 'denied',
+      ad_user_data: consent.ads ? 'granted' : 'denied',
+      ad_personalization: consent.ads ? 'granted' : 'denied',
+      analytics_storage: consent.analytics ? 'granted' : 'denied',
+      functionality_storage: 'granted',
+      security_storage: 'granted'
+    });
+
+    gtag('config', GA_ID, { anonymize_ip: true });
+
+    if (consent.ads) {
+      const s2 = document.createElement('script');
+      s2.async = true;
+      s2.crossOrigin = 'anonymous';
+      s2.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(ADS_CLIENT);
+      s2.setAttribute('data-ad-client', ADS_CLIENT);
+      document.head.appendChild(s2);
+    }
+  };
+})();
 </script>
 </body>
 </html>
