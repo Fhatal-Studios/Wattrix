@@ -60,6 +60,9 @@
   --font-body: 'Inter', system-ui, sans-serif;
   /* Cleaner body font if available, fallback system */
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Force native controls (like scrollbars and select dropdowns) to dark mode */
+  color-scheme: dark;
 }
 
 /* --- 2. Reset & Base --- */
@@ -619,6 +622,11 @@ select:focus {
   border-color: var(--color-1);
   box-shadow: 0 0 0 3px rgba(117, 89, 255, 0.15);
   background: rgba(255, 255, 255, 0.05);
+}
+
+select option {
+  background-color: #000;
+  color: #fff;
 }
 
 .results-card {
